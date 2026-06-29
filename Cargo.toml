@@ -11,4 +11,5 @@ members = [
     "crates/themectl-repository",
     "crates/themectl-core",
     "crates/themectl-cli",
+    "apps/themectl-gui/src-tauri",
 ]

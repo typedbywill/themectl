@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --themectl-bg-primary: #0a0e17;     /* Deep navy */
+  --themectl-bg-surface: #111827;     /* Card surfaces */
+  --themectl-bg-elevated: #1f2937;    /* Elevated panels */
+  --themectl-accent: #7c3aed;         /* Purple-blue accent */
+  --themectl-accent-hover: #9333ea;
+  --themectl-text-primary: #f3f4f6;
+  --themectl-text-secondary: #9ca3af;
+  --themectl-border: #374151;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #0b0f19;
+  color: #f3f4f6;
+  margin: 0;
+  overflow: hidden;
+  height: 100dvh;
+}
+
+code, pre {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Scrollbar customizations */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1f2937;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Custom drag region for Tauri custom titlebar */
+.titlebar {
+  height: 36px;
+  background: #070a10;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #1e293b;
+}
+
+.titlebar-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 42px;
+  height: 36px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.titlebar-button:hover {
+  background: #1e293b;
+}
+
+.titlebar-button.close:hover {
+  background: #ef4444;
+  color: white;
+}
