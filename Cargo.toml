@@ -32,7 +32,13 @@ dirs = "5"
 # Data/hora para backups
 chrono = { version = "0.4", features = ["serde"] }
 
+# Assinaturas e Criptografia
+ed25519-dalek = { version = "2.1", default-features = false, features = ["rand_core"] }
+sha2 = "0.10"
+hex = "0.4"
+
 [dev-dependencies]
 tempfile = "3"
 assert_cmd = "2"
 predicates = "3"
+rand = "0.8"

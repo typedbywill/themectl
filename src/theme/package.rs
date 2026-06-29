@@ -3,13 +3,25 @@ use crate::theme::manifest::ThemeManifest;
 use crate::theme::validator;
 use flate2::read::GzDecoder;
 use std::fs::File;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use tar::Archive;
 
-/// Unpacks a .theme (.tar.gz) package, reads the manifest, and validates it.
+/// Unpacks a .theme package, reads the manifest, and validates it.
 /// Returns the parsed manifest and the path to the unpacked theme directory.
 pub fn unpack_and_validate(theme_tar_path: &Path, temp_extract_dir: &Path) -> Result<(ThemeManifest, PathBuf)> {
-    let file = File::open(theme_tar_path)?;
+    let mut file = File::open(theme_tar_path)?;
+    
+    // Read and verify the header
+    let mut header = [0u8; 20];
+    file.read_exact(&mut header).map_err(|_| {
+        ThemectlError::InvalidManifest("Invalid theme package format: missing or corrupt THEMECTL header".to_string())
+    })?;
+    
+    if &header != b"THEMECTL\nversion: 1\n" {
+        return Err(ThemectlError::InvalidManifest("Invalid theme package format: unsupported or missing THEMECTL header".to_string()));
+    }
+    
     let tar = GzDecoder::new(file);
     let mut archive = Archive::new(tar);
 
@@ -42,9 +54,13 @@ pub fn unpack_and_validate(theme_tar_path: &Path, temp_extract_dir: &Path) -> Re
     Ok((manifest, theme_dir))
 }
 
-/// Packs a theme directory into a .theme (.tar.gz) file.
+/// Packs a theme directory into a .theme file with the THEMECTL header.
 pub fn pack_theme(theme_dir: &Path, output_archive_path: &Path) -> Result<()> {
-    let file = File::create(output_archive_path)?;
+    let mut file = File::create(output_archive_path)?;
+    
+    // Write the magic header
+    file.write_all(b"THEMECTL\nversion: 1\n")?;
+    
     let enc = flate2::write::GzEncoder::new(file, flate2::Compression::default());
     let mut tar = tar::Builder::new(enc);
 

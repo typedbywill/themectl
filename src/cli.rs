@@ -68,6 +68,16 @@ pub enum Commands {
     Info {
         name: String,
     },
+    #[command(about = "Perform system environment and dependency checks")]
+    Doctor,
+    #[command(about = "Verify the cryptographic signature of a theme")]
+    Verify {
+        name_or_path: String,
+    },
+    #[command(about = "Preview changes that a theme would apply")]
+    Preview {
+        name_or_path: String,
+    },
 }
 
 #[derive(Subcommand, Debug)]

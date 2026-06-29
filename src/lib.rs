@@ -15,6 +15,7 @@ use crate::backup::{create_and_save_snapshot, list_snapshots};
 use crate::backup::restore::restore_snapshot;
 use crate::util::cmd::check_tool;
 use crate::util::fs::copy_dir;
+use crate::util::compat::{get_current_distros, is_version_compatible};
 
 use clap::Parser;
 use colored::Colorize;
@@ -55,6 +56,15 @@ pub fn run_cli() -> Result<()> {
         }
         cli::Commands::Info { name } => {
             info_cmd(&name)?;
+        }
+        cli::Commands::Doctor => {
+            doctor_cmd()?;
+        }
+        cli::Commands::Verify { name_or_path } => {
+            verify_cmd(&name_or_path)?;
+        }
+        cli::Commands::Preview { name_or_path } => {
+            preview_cmd(&name_or_path)?;
         }
     }
 
@@ -132,7 +142,18 @@ fn install_cmd(source: &str, override_name: Option<&str>, force: bool, dry_run: 
 
     let (manifest, unpacked_dir) = package::unpack_and_validate(&theme_file_path, &temp_extract)?;
     
-    let target_name = override_name.unwrap_or(&manifest.name);
+    // Cryptographic verification if signature is present
+    if let Some(ref signature) = manifest.signature {
+        println!("Verifying theme cryptographic signature...");
+        if let Err(e) = crate::theme::signature::verify_theme_signature(&unpacked_dir, signature) {
+            return Err(ThemectlError::InvalidManifest(format!("Cryptographic signature verification failed: {}. Aborting installation.", e)));
+        }
+        println!("✓ Theme cryptographic signature is valid!");
+    } else {
+        println!("{} Theme has no cryptographic signature. Installing anyway.", "⚠".yellow());
+    }
+    
+    let target_name = override_name.unwrap_or(manifest.id.as_deref().unwrap_or(&manifest.name));
     let themes_dir = get_themes_dir()?;
     let install_dest = themes_dir.join(target_name);
 
@@ -147,8 +168,29 @@ fn install_cmd(source: &str, override_name: Option<&str>, force: bool, dry_run: 
     if let Some(ref deps) = manifest.dependencies {
         if let Some(ref packages) = deps.packages {
             for pkg in packages {
-                if !check_tool(pkg) {
+                if !crate::util::compat::is_package_installed(pkg) {
                     println!("{} Missing dependency: {} (install it for full theme support)", "⚠".yellow(), pkg);
+                }
+            }
+        }
+        if let Some(ref system_pkgs) = deps.system {
+            for pkg in system_pkgs {
+                if !crate::util::compat::is_package_installed(pkg) {
+                    println!("{} Missing system dependency: {} (install it for full theme support)", "⚠".yellow(), pkg);
+                }
+            }
+        }
+        if let Some(ref fonts) = deps.fonts {
+            for font in fonts {
+                if !crate::util::compat::is_font_installed(font) {
+                    println!("{} Missing font: {} (install it for full theme support)", "⚠".yellow(), font);
+                }
+            }
+        }
+        if let Some(ref icons) = deps.icons {
+            for icon in icons {
+                if !crate::util::compat::is_icon_theme_installed(icon) {
+                    println!("{} Missing icon theme: {} (install it for full theme support)", "⚠".yellow(), icon);
                 }
             }
         }
@@ -191,20 +233,51 @@ fn apply_cmd(name: &str, no_backup: bool, components: Option<Vec<String>>, dry_r
 
     // Check environment support
     let current_desktop = apply::detector::detect()?;
-    let supported = manifest.supports.iter().any(|s| {
+    let supported_by_supports = manifest.supports.iter().any(|s| {
         match (&current_desktop, s) {
             (DesktopEnvironment::KdePlasma6, DesktopEnvironment::KdePlasma6) => true,
             (DesktopEnvironment::KdePlasma5, DesktopEnvironment::KdePlasma5) => true,
             _ => false,
         }
     });
+    let supported_by_targets = if let Some(ref targets) = manifest.targets {
+        targets.iter().any(|t| t == "kde-plasma" && matches!(current_desktop, DesktopEnvironment::KdePlasma6 | DesktopEnvironment::KdePlasma5))
+    } else {
+        false
+    };
 
-    if !supported {
+    if !supported_by_supports && !supported_by_targets {
         let desktop_str = current_desktop.to_string();
         return Err(ThemectlError::ThemeNotCompatible {
             name: name.to_string(),
             desktop: desktop_str,
         });
+    }
+
+    // Check system compatibility if specified
+    if let Some(ref compat) = manifest.compatibility {
+        if let Some(ref plasma_compat) = compat.plasma {
+            let current_plasma_version = crate::theme::lockfile::generate_lockfile().lock.plasma;
+            if let Some(ref ver) = current_plasma_version {
+                if !is_version_compatible(ver, plasma_compat.min.as_deref(), plasma_compat.max.as_deref()) {
+                    return Err(ThemectlError::ThemeNotCompatible {
+                        name: name.to_string(),
+                        desktop: format!("KDE Plasma version {} (required min: {:?}, max: {:?})", ver, plasma_compat.min, plasma_compat.max),
+                    });
+                }
+            }
+        }
+
+        if let Some(ref distros_list) = compat.distro {
+            let current_distros = get_current_distros();
+            let distro_matched = distros_list.iter().any(|d| current_distros.contains(&d.to_lowercase()));
+            if !distro_matched {
+                return Err(ThemectlError::ThemeNotCompatible {
+                    name: name.to_string(),
+                    desktop: format!("Distro {:?} (required: {:?})", current_distros, distros_list),
+                });
+            }
+        }
     }
 
     if !no_backup {
@@ -554,6 +627,7 @@ fn export_cmd(output: Option<&str>, dry_run: bool) -> Result<()> {
     }
 
     let manifest = ThemeManifest {
+        id: Some(format!("org.themectl.{}", theme_name)),
         name: theme_name.to_string(),
         version: "0.1.0".to_string(),
         display_name: Some("My Exported Theme".to_string()),
@@ -562,13 +636,26 @@ fn export_cmd(output: Option<&str>, dry_run: bool) -> Result<()> {
         homepage: None,
         license: Some("Proprietary".to_string()),
         supports: vec![DesktopEnvironment::KdePlasma6],
+        targets: Some(vec!["kde-plasma".to_string()]),
+        compatibility: Some(crate::theme::manifest::Compatibility {
+            plasma: Some(crate::theme::manifest::PlasmaCompat {
+                min: Some("6.0".to_string()),
+                max: Some("6.x".to_string()),
+            }),
+            distro: None,
+        }),
         dependencies: None,
         components: Some(comp_manifest),
+        signature: None,
     };
 
+    let lockfile = crate::theme::lockfile::generate_lockfile();
     if !dry_run {
+        crate::theme::lockfile::write_lockfile(&temp_export_dir.join("theme.lock"), &lockfile)?;
         let yaml_file = fs::File::create(temp_export_dir.join("theme.yaml"))?;
         serde_yaml::to_writer(yaml_file, &manifest)?;
+    } else {
+        println!("(dry-run) Would generate theme.lock: {:?}", lockfile.lock);
     }
 
     let timestamp = Utc::now().format("%Y-%m-%dT%H-%M-%S").to_string();
@@ -597,6 +684,9 @@ fn info_cmd(name: &str) -> Result<()> {
     let manifest_file = fs::File::open(theme_path.join("theme.yaml"))?;
     let manifest: ThemeManifest = serde_yaml::from_reader(manifest_file)?;
 
+    if let Some(ref id) = manifest.id {
+        println!("ID: {}", id.cyan());
+    }
     println!("Theme: {}", manifest.name.cyan());
     println!("Version: {}", manifest.version);
     println!("Author: {}", manifest.author.as_deref().unwrap_or("Unknown"));
@@ -604,6 +694,9 @@ fn info_cmd(name: &str) -> Result<()> {
     
     let supports_str = manifest.supports.iter().map(|s| s.to_string()).collect::<Vec<_>>().join(", ");
     println!("Supports: {}", supports_str);
+    if let Some(ref targets) = manifest.targets {
+        println!("Targets: {}", targets.join(", "));
+    }
 
     println!("\nComponents:");
     if let Some(ref comp) = manifest.components {
@@ -627,15 +720,280 @@ fn info_cmd(name: &str) -> Result<()> {
         println!("\nDependencies:");
         if let Some(ref packages) = deps.packages {
             for pkg in packages {
-                let status = if check_tool(pkg) {
+                let status = if crate::util::compat::is_package_installed(pkg) {
                     "installed".green()
                 } else {
                     "missing".red()
                 };
-                println!("  {:<15} ✓ {}", pkg, status);
+                println!("  [Package]   {:<15} ✓ {}", pkg, status);
+            }
+        }
+        if let Some(ref system) = deps.system {
+            for pkg in system {
+                let status = if crate::util::compat::is_package_installed(pkg) {
+                    "installed".green()
+                } else {
+                    "missing".red()
+                };
+                println!("  [System]    {:<15} ✓ {}", pkg, status);
+            }
+        }
+        if let Some(ref fonts) = deps.fonts {
+            for font in fonts {
+                let status = if crate::util::compat::is_font_installed(font) {
+                    "installed".green()
+                } else {
+                    "missing".red()
+                };
+                println!("  [Font]      {:<15} ✓ {}", font, status);
+            }
+        }
+        if let Some(ref icons) = deps.icons {
+            for icon in icons {
+                let status = if crate::util::compat::is_icon_theme_installed(icon) {
+                    "installed".green()
+                } else {
+                    "missing".red()
+                };
+                println!("  [Icon]      {:<15} ✓ {}", icon, status);
             }
         }
     }
 
+    let lock_path = theme_path.join("theme.lock");
+    if lock_path.exists() {
+        if let Ok(lockfile) = crate::theme::lockfile::load_lockfile(&lock_path) {
+            println!("\nEnvironment Lock:");
+            if let Some(ref p) = lockfile.lock.plasma {
+                println!("  plasma: {}", p);
+            }
+            if let Some(ref k) = lockfile.lock.kvantum {
+                println!("  kvantum: {}", k);
+            }
+            if let Some(ref i) = lockfile.lock.icons {
+                println!("  icons: {}", i);
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn doctor_cmd() -> Result<()> {
+    println!("{}", "=== Themectl System Doctor ===".bold().cyan());
+    
+    let desktop = apply::detector::detect()?;
+    println!("Desktop Environment: {}", desktop.to_string().green());
+    
+    if check_tool("plasmashell") {
+        if let Ok(output) = std::process::Command::new("plasmashell").arg("--version").output() {
+            let ver_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            println!("  Version: {}", ver_str.green());
+        }
+    } else {
+        println!("  Version: {}", "Not found".red());
+    }
+
+    let distros = get_current_distros();
+    println!("Detected Distros/Likes: {}", distros.join(", ").green());
+
+    println!("\n=== Core Tools ===");
+    let check_core = |tool: &str| {
+        let status = if check_tool(tool) {
+            "Installed".green()
+        } else {
+            "Missing (Optional but recommended)".yellow()
+        };
+        println!("  {:<25}: {}", tool, status);
+    };
+    check_core("kwriteconfig5");
+    check_core("kwriteconfig6");
+    check_core("plasma-apply-colorscheme");
+    check_core("plasma-apply-desktoptheme");
+    check_core("kvantummanager");
+    check_core("gsettings");
+    check_core("fc-cache");
+    check_core("qdbus");
+    check_core("dbus-send");
+
+    let registry = load_registry()?;
+    if let Some(ref applied_theme) = registry.applied {
+        println!("\n=== Applied Theme: {} ===", applied_theme.cyan());
+        let themes_dir = get_themes_dir()?;
+        let theme_path = themes_dir.join(applied_theme);
+        if theme_path.exists() {
+            let manifest_file = fs::File::open(theme_path.join("theme.yaml"))?;
+            let manifest: ThemeManifest = serde_yaml::from_reader(manifest_file)?;
+            
+            if let Some(ref deps) = manifest.dependencies {
+                let mut missing = 0;
+                
+                if let Some(ref pkgs) = deps.packages {
+                    for pkg in pkgs {
+                        if crate::util::compat::is_package_installed(pkg) {
+                            println!("  [System Package] {:<18} : {}", pkg.cyan(), "Found".green());
+                        } else {
+                            println!("  [System Package] {:<18} : {}", pkg.cyan(), "Missing".red());
+                            missing += 1;
+                        }
+                    }
+                }
+                if let Some(ref sys_pkgs) = deps.system {
+                    for pkg in sys_pkgs {
+                        if crate::util::compat::is_package_installed(pkg) {
+                            println!("  [System Package] {:<18} : {}", pkg.cyan(), "Found".green());
+                        } else {
+                            println!("  [System Package] {:<18} : {}", pkg.cyan(), "Missing".red());
+                            missing += 1;
+                        }
+                    }
+                }
+
+                if let Some(ref fonts) = deps.fonts {
+                    for font in fonts {
+                        if crate::util::compat::is_font_installed(font) {
+                            println!("  [Font]           {:<18} : {}", font.cyan(), "Found".green());
+                        } else {
+                            println!("  [Font]           {:<18} : {}", font.cyan(), "Missing".red());
+                            missing += 1;
+                        }
+                    }
+                }
+
+                if let Some(ref icons) = deps.icons {
+                    for icon in icons {
+                        if crate::util::compat::is_icon_theme_installed(icon) {
+                            println!("  [Icon Theme]     {:<18} : {}", icon.cyan(), "Found".green());
+                        } else {
+                            println!("  [Icon Theme]     {:<18} : {}", icon.cyan(), "Missing".red());
+                            missing += 1;
+                        }
+                    }
+                }
+
+                if missing == 0 {
+                    println!("\n✓ All theme dependencies are met!");
+                } else {
+                    println!("\n⚠ Some dependencies are missing. Install them to avoid issues with this theme.");
+                }
+            } else {
+                println!("No dependencies listed for this theme.");
+            }
+        } else {
+            println!("Theme directory not found in ~/.local/share/themectl/themes/");
+        }
+    } else {
+        println!("\nNo theme currently registered as applied.");
+    }
+    
+    Ok(())
+}
+
+fn verify_cmd(name_or_path: &str) -> Result<()> {
+    let path = Path::new(name_or_path);
+    let (manifest, theme_dir, _temp_dir) = if name_or_path.ends_with(".theme") && path.exists() {
+        let data_dir = dirs::data_local_dir().ok_or_else(|| {
+            ThemectlError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "Could not resolve data local dir"))
+        })?;
+        let temp_extract = data_dir.join("themectl/tmp/verify_extract");
+        let _ = fs::remove_dir_all(&temp_extract);
+        crate::util::fs::ensure_dir(&temp_extract)?;
+        let (manifest, unpacked_dir) = package::unpack_and_validate(path, &temp_extract)?;
+        (manifest, unpacked_dir, Some(temp_extract))
+    } else {
+        let themes_dir = get_themes_dir()?;
+        let theme_path = themes_dir.join(name_or_path);
+        if !theme_path.exists() {
+            return Err(ThemectlError::ThemeNotFound(name_or_path.to_string()));
+        }
+        let manifest_file = fs::File::open(theme_path.join("theme.yaml"))?;
+        let manifest: ThemeManifest = serde_yaml::from_reader(manifest_file)?;
+        (manifest, theme_path, None)
+    };
+
+    if let Some(ref signature) = manifest.signature {
+        println!("Verifying theme signature for '{}'...", manifest.name.cyan());
+        match crate::theme::signature::verify_theme_signature(&theme_dir, signature) {
+            Ok(_) => {
+                println!("{}", "✓ Cryptographic signature is valid!".green());
+                println!("  Algorithm: {}", signature.algorithm);
+                println!("  Public Key: {}", signature.public_key);
+            }
+            Err(e) => {
+                println!("{}", "✗ Cryptographic signature verification failed!".red());
+                if let Some(ref temp) = _temp_dir {
+                    let _ = fs::remove_dir_all(temp);
+                }
+                return Err(e);
+            }
+        }
+    } else {
+        println!("{} Theme '{}' is not signed.", "⚠".yellow(), manifest.name.cyan());
+    }
+
+    if let Some(ref temp) = _temp_dir {
+        let _ = fs::remove_dir_all(temp);
+    }
+    Ok(())
+}
+
+fn preview_cmd(name_or_path: &str) -> Result<()> {
+    let path = Path::new(name_or_path);
+    let (manifest, _temp_dir) = if name_or_path.ends_with(".theme") && path.exists() {
+        let data_dir = dirs::data_local_dir().ok_or_else(|| {
+            ThemectlError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "Could not resolve data local dir"))
+        })?;
+        let temp_extract = data_dir.join("themectl/tmp/preview_extract");
+        let _ = fs::remove_dir_all(&temp_extract);
+        crate::util::fs::ensure_dir(&temp_extract)?;
+        let (manifest, _unpacked_dir) = package::unpack_and_validate(path, &temp_extract)?;
+        (manifest, Some(temp_extract))
+    } else {
+        let themes_dir = get_themes_dir()?;
+        let theme_path = themes_dir.join(name_or_path);
+        if !theme_path.exists() {
+            return Err(ThemectlError::ThemeNotFound(name_or_path.to_string()));
+        }
+        let manifest_file = fs::File::open(theme_path.join("theme.yaml"))?;
+        let manifest: ThemeManifest = serde_yaml::from_reader(manifest_file)?;
+        (manifest, None)
+    };
+
+    println!("Preview para o tema: {}", manifest.name.cyan());
+    if let Some(ref comp) = manifest.components {
+        if comp.color_scheme.is_some() {
+            println!("✓ Mudará esquema de cores");
+        }
+        if comp.fonts.is_some() {
+            println!("✓ Instalará fontes");
+        }
+        if comp.wallpaper.is_some() {
+            println!("✓ Alterará wallpaper");
+        }
+        if comp.gtk_theme.is_some() {
+            println!("✓ Aplicará tema GTK");
+        }
+        if comp.plasma_style.is_some() {
+            println!("✓ Mudará estilo do Plasma");
+        }
+        if comp.icon_theme.is_some() {
+            println!("✓ Alterará tema de ícones");
+        }
+        if comp.cursor_theme.is_some() {
+            println!("✓ Alterará tema de cursor");
+        }
+        if comp.kvantum_theme.is_some() {
+            println!("✓ Aplicará tema do Kvantum");
+        }
+        if comp.konsole_profile.is_some() {
+            println!("✓ Aplicará perfil do Konsole");
+        }
+    } else {
+        println!("Este tema não possui componentes definidos.");
+    }
+
+    if let Some(ref temp) = _temp_dir {
+        let _ = fs::remove_dir_all(temp);
+    }
     Ok(())
 }

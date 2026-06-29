@@ -12,6 +12,16 @@ pub fn validate(manifest: &ThemeManifest, package_dir: &Path) -> Result<()> {
         )));
     }
 
+    // 1b. ID validation (if present)
+    if let Some(ref id) = manifest.id {
+        if !is_valid_id(id) {
+            return Err(ThemectlError::InvalidManifest(format!(
+                "id '{}' is invalid (must be lowercase reverse-DNS format, e.g., org.catppuccin.mocha)",
+                id
+            )));
+        }
+    }
+
     // 2. Version validation
     if !is_valid_semver(&manifest.version) {
         return Err(ThemectlError::InvalidManifest(format!(
@@ -30,12 +40,18 @@ pub fn validate(manifest: &ThemeManifest, package_dir: &Path) -> Result<()> {
     }
 
     // 4. Desktop environment compatibility validation
-    let has_valid_env = manifest.supports.iter().any(|env| {
+    let has_valid_supports = manifest.supports.iter().any(|env| {
         matches!(env, DesktopEnvironment::KdePlasma6 | DesktopEnvironment::KdePlasma5)
     });
-    if !has_valid_env {
+    let has_valid_targets = if let Some(ref targets) = manifest.targets {
+        targets.iter().any(|t| t == "kde-plasma")
+    } else {
+        false
+    };
+
+    if !has_valid_supports && !has_valid_targets {
         return Err(ThemectlError::InvalidManifest(
-            "supports must contain at least one valid desktop environment (kde-plasma-5 or kde-plasma-6)".to_string(),
+            "supports must contain at least one valid desktop environment (kde-plasma-5 or kde-plasma-6) or targets must contain 'kde-plasma'".to_string(),
         ));
     }
 
@@ -195,6 +211,34 @@ fn is_numeric_identifier(s: &str) -> bool {
     s.chars().all(|c| c.is_ascii_digit())
 }
 
+fn is_valid_id(id: &str) -> bool {
+    let len = id.len();
+    if len < 2 || len > 128 {
+        return false;
+    }
+    if !id.contains('.') {
+        return false;
+    }
+    let segments: Vec<&str> = id.split('.').collect();
+    if segments.iter().any(|s| s.is_empty()) {
+        return false;
+    }
+    for segment in segments {
+        let mut chars = segment.chars();
+        if let Some(first) = chars.next() {
+            if !first.is_ascii_lowercase() && !first.is_ascii_digit() && first != '_' {
+                return false;
+            }
+        }
+        for c in chars {
+            if !c.is_ascii_lowercase() && !c.is_ascii_digit() && c != '-' && c != '_' {
+                return false;
+            }
+        }
+    }
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -203,6 +247,7 @@ mod tests {
 
     fn get_minimal_manifest() -> ThemeManifest {
         ThemeManifest {
+            id: None,
             name: "minimal-theme".to_string(),
             version: "0.1.0".to_string(),
             display_name: None,
@@ -211,8 +256,11 @@ mod tests {
             homepage: None,
             license: None,
             supports: vec![DesktopEnvironment::KdePlasma6],
+            targets: None,
+            compatibility: None,
             dependencies: None,
             components: None,
+            signature: None,
         }
     }
 
@@ -268,6 +316,43 @@ mod tests {
         let mut manifest = get_minimal_manifest();
 
         manifest.supports = vec![DesktopEnvironment::Unknown("gnome".to_string())];
+        assert!(validate(&manifest, dir.path()).is_err());
+    }
+
+    #[test]
+    fn test_validate_targets() {
+        let dir = tempdir().unwrap();
+        let mut manifest = get_minimal_manifest();
+
+        // If supports is empty but targets has 'kde-plasma' it is valid
+        manifest.supports = vec![];
+        manifest.targets = Some(vec!["kde-plasma".to_string()]);
+        assert!(validate(&manifest, dir.path()).is_ok());
+
+        // If supports is empty and targets has invalid target, it is invalid
+        manifest.targets = Some(vec!["gnome".to_string()]);
+        assert!(validate(&manifest, dir.path()).is_err());
+    }
+
+    #[test]
+    fn test_validate_id() {
+        let dir = tempdir().unwrap();
+        let mut manifest = get_minimal_manifest();
+
+        // Valid id
+        manifest.id = Some("org.catppuccin.mocha".to_string());
+        assert!(validate(&manifest, dir.path()).is_ok());
+
+        // Invalid id: contains uppercase
+        manifest.id = Some("Org.catppuccin.mocha".to_string());
+        assert!(validate(&manifest, dir.path()).is_err());
+
+        // Invalid id: no dots
+        manifest.id = Some("catppuccin".to_string());
+        assert!(validate(&manifest, dir.path()).is_err());
+
+        // Invalid id: ends with dot or empty segment
+        manifest.id = Some("org.catppuccin.".to_string());
         assert!(validate(&manifest, dir.path()).is_err());
     }
 
