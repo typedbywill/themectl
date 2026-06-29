@@ -5,6 +5,7 @@ import { PageHeader } from "../components/layout/PageHeader";
 import { CardSectionHeader } from "../components/ui/CardSectionHeader";
 import { Button, ButtonLink } from "../components/ui/Button";
 import { useThemeDetails } from "../hooks/useThemes";
+import { useTranslation } from "../hooks/useTranslation";
 import { 
   FiArrowLeft, 
   FiPlay, 
@@ -20,6 +21,7 @@ import { useThemeUIStore } from "../stores/themeStore";
 import { PreviewModal } from "../components/themes/PreviewModal";
 
 export const ThemeDetails: React.FC = () => {
+  const { t } = useTranslation();
   const { name } = useParams<{ name: string }>();
   const { data: theme, isLoading, error } = useThemeDetails(name || "");
   const { openPreviewModal, previewModalOpen, closePreviewModal, previewModalTheme } = useThemeUIStore();
@@ -28,7 +30,7 @@ export const ThemeDetails: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <Spinner size="md" className="text-ink" />
-        <span className="type-meta text-stone">Loading theme details...</span>
+        <span className="type-meta text-stone">{t("details.loading")}</span>
       </div>
     );
   }
@@ -37,10 +39,10 @@ export const ThemeDetails: React.FC = () => {
     return (
       <div className="page-container">
         <ButtonLink to="/installed" variant="text" className="text-stone hover:text-ink">
-          <FiArrowLeft /> back to installed
+          <FiArrowLeft /> {t("create.buttons.back")}
         </ButtonLink>
         <div className="type-body text-stone py-4">
-          Failed to load theme details: {String(error || "Theme not found")}
+          {t("common.error")}: {String(error || "Theme not found")}
         </div>
       </div>
     );
@@ -51,21 +53,21 @@ export const ThemeDetails: React.FC = () => {
       return (
         <span className="monochrome-badge monochrome-badge-outline gap-1 text-ink">
           <FiShield size={12} className="text-stone" />
-          <span>Signature Verified</span>
+          <span>{t("details.verified")}</span>
         </span>
       );
     } else if (status === "Unsigned") {
       return (
         <span className="monochrome-badge monochrome-badge-outline gap-1 text-stone">
           <FiAlertTriangle size={12} />
-          <span>Unsigned Package</span>
+          <span>{t("details.unsigned")}</span>
         </span>
       );
     } else {
       return (
         <span className="monochrome-badge monochrome-badge-outline border-red-200 text-red-500 gap-1">
           <FiAlertTriangle size={12} />
-          <span>Invalid Signature</span>
+          <span>{t("details.invalid")}</span>
         </span>
       );
     }
@@ -74,17 +76,17 @@ export const ThemeDetails: React.FC = () => {
   return (
     <div className="page-container">
       <ButtonLink to="/installed" variant="text" className="text-stone hover:text-ink -mb-4">
-        <FiArrowLeft /> back to installed
+        <FiArrowLeft /> {t("create.buttons.back")}
       </ButtonLink>
 
       <PageHeader 
-        eyebrow="Theme Details"
+        eyebrow={t("details.eyebrow")}
         title={theme.display_name || theme.name} 
-        subtitle={`Installed version: ${theme.version}`}
+        subtitle={`${t("installed.version")}: ${theme.version}`}
         actions={
           <Button variant="primary" onClick={() => openPreviewModal(theme.name)}>
             <FiPlay size={14} />
-            <span>Apply Theme</span>
+            <span>{t("installed.applyTheme")}</span>
           </Button>
         }
       />
@@ -96,7 +98,7 @@ export const ThemeDetails: React.FC = () => {
               <div className="flex flex-wrap items-center gap-2">
                 {getSignatureBadge(theme.signature_status)}
                 {theme.is_applied && (
-                  <span className="monochrome-badge monochrome-badge-active">Currently Applied</span>
+                  <span className="monochrome-badge monochrome-badge-active">{t("details.activeLabel")}</span>
                 )}
               </div>
 
@@ -109,7 +111,7 @@ export const ThemeDetails: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 type-meta">
                 <div className="flex items-center gap-2 text-stone">
                   <FiUser size={15} />
-                  <span>Author: <span className="text-ink type-body-strong">{theme.author || "Unknown"}</span></span>
+                  <span>{t("create.form.author")}: <span className="text-ink type-body-strong">{theme.author || "Unknown"}</span></span>
                 </div>
                 <div className="flex items-center gap-2 text-stone">
                   <FiFileText size={15} />
@@ -131,7 +133,7 @@ export const ThemeDetails: React.FC = () => {
           </div>
 
           <div className="card-flat">
-            <CardSectionHeader title="Visual Components Included" />
+            <CardSectionHeader title={t("details.components")} />
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 -mt-2">
               {Object.entries(theme.components).map(([key, present]) => (
@@ -145,9 +147,9 @@ export const ThemeDetails: React.FC = () => {
                 >
                   <span className="capitalize type-body-strong">{key.replace('_', ' ')}</span>
                   {present ? (
-                    <span className="monochrome-badge monochrome-badge-active">Active</span>
+                    <span className="monochrome-badge monochrome-badge-active">{t("details.activeLabel")}</span>
                   ) : (
-                    <span className="type-micro-caps text-stone opacity-50">None</span>
+                    <span className="type-micro-caps text-stone opacity-50">{t("create.review.none")}</span>
                   )}
                 </div>
               ))}
@@ -180,11 +182,11 @@ export const ThemeDetails: React.FC = () => {
                       </div>
                       {dep.installed ? (
                         <span className="type-meta text-ink flex items-center gap-1">
-                          <FiCheck size={14} /> Met
+                          <FiCheck size={14} /> {t("doctor.met")}
                         </span>
                       ) : (
                         <span className="type-meta text-stone flex items-center gap-1">
-                          <FiX size={14} /> Missing
+                          <FiX size={14} /> {t("doctor.missing")}
                         </span>
                       )}
                     </div>
@@ -193,7 +195,7 @@ export const ThemeDetails: React.FC = () => {
               </div>
             ) : (
               <div className="type-body text-stone italic py-6 text-center -mt-2">
-                No dependencies specified for this theme.
+                {t("details.componentsDesc")}
               </div>
             )}
           </div>

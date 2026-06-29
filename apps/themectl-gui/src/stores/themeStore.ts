@@ -5,11 +5,13 @@ interface ThemeUIState {
   previewModalOpen: boolean;
   sidebarCollapsed: boolean;
   darkMode: boolean;
+  language: "en" | "pt";
   
   openPreviewModal: (themeName: string) => void;
   closePreviewModal: () => void;
   toggleSidebar: () => void;
   toggleDarkMode: () => void;
+  setLanguage: (lang: "en" | "pt") => void;
 }
 
 const getInitialDarkMode = (): boolean => {
@@ -18,6 +20,15 @@ const getInitialDarkMode = (): boolean => {
     return saved === "true";
   }
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
+};
+
+const getInitialLanguage = (): "en" | "pt" => {
+  const saved = localStorage.getItem("language");
+  if (saved === "en" || saved === "pt") {
+    return saved;
+  }
+  const browserLang = navigator.language.split("-")[0];
+  return browserLang === "pt" ? "pt" : "en";
 };
 
 const syncDarkModeClass = (isDark: boolean) => {
@@ -36,6 +47,7 @@ export const useThemeUIStore = create<ThemeUIState>((set) => ({
   previewModalOpen: false,
   sidebarCollapsed: false,
   darkMode: getInitialDarkMode(),
+  language: getInitialLanguage(),
 
   openPreviewModal: (themeName) => set({ previewModalTheme: themeName, previewModalOpen: true }),
   closePreviewModal: () => set({ previewModalTheme: null, previewModalOpen: false }),
@@ -45,5 +57,9 @@ export const useThemeUIStore = create<ThemeUIState>((set) => ({
     localStorage.setItem("darkMode", String(nextDark));
     syncDarkModeClass(nextDark);
     return { darkMode: nextDark };
+  }),
+  setLanguage: (lang) => set(() => {
+    localStorage.setItem("language", lang);
+    return { language: lang };
   }),
 }));

@@ -6,6 +6,7 @@ import { CardSectionHeader } from "../components/ui/CardSectionHeader";
 import { Button } from "../components/ui/Button";
 import { api } from "../services/api";
 import { SystemComponent, CreateThemeInput } from "../types";
+import { useTranslation } from "../hooks/useTranslation";
 import { open } from "@tauri-apps/plugin-dialog";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { toast } from "sonner";
@@ -23,6 +24,7 @@ import {
 } from "react-icons/fi";
 
 export const CreateTheme: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [step, setStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -84,7 +86,7 @@ export const CreateTheme: React.FC = () => {
         setSystemGtkThemes(gtk);
       } catch (err) {
         console.error("Failed to load system components", err);
-        toast.error("Erro ao carregar componentes do sistema.");
+        toast.error("Failed to load system components.");
       } finally {
         setLoadingComponents(false);
       }
@@ -96,7 +98,6 @@ export const CreateTheme: React.FC = () => {
   // Auto slugify name when display name changes
   const handleDisplayNameChange = (val: string) => {
     setDisplayName(val);
-    // Convert to lowercase, remove non-alphanumeric, replace spaces with hyphen
     const slug = val
       .toLowerCase()
       .trim()
@@ -119,28 +120,28 @@ export const CreateTheme: React.FC = () => {
         setWallpaperPath(selected);
       }
     } catch (err) {
-      toast.error("Erro ao selecionar imagem.");
+      toast.error("Error selecting image.");
     }
   };
 
   // Input Validation for Step 1
   const validateStep1 = (): boolean => {
     if (!displayName.trim()) {
-      toast.error("Nome de exibição é obrigatório.");
+      toast.error(t("create.form.validationNameRequired"));
       return false;
     }
     const nameRegex = /^[a-z0-9][a-z0-9-]{1,63}$/;
     if (!nameRegex.test(name)) {
-      toast.error("ID/Nome do tema deve conter apenas letras minúsculas, números e hífens.");
+      toast.error(t("create.form.validationNameFormat"));
       return false;
     }
     const semverRegex = /^\d+\.\d+\.\d+(\-[a-zA-Z0-9\.\-]+)?(\+[a-zA-Z0-9\.\-]+)?$/;
     if (!semverRegex.test(version)) {
-      toast.error("Versão precisa estar no formato SemVer válido (ex: 1.0.0).");
+      toast.error("Version must be in valid SemVer format (e.g., 1.0.0).");
       return false;
     }
     if (description.length > 200) {
-      toast.error("A descrição não pode exceder 200 caracteres.");
+      toast.error("Description cannot exceed 200 characters.");
       return false;
     }
     return true;
@@ -173,10 +174,10 @@ export const CreateTheme: React.FC = () => {
       };
 
       const result = await api.createTheme(input);
-      toast.success(`Tema '${result.theme_name}' criado com sucesso!`);
+      toast.success(t("create.success"));
       navigate(`/installed/${result.theme_name}`);
     } catch (err: any) {
-      toast.error(`Erro ao criar tema: ${err}`);
+      toast.error(`${t("create.failed")}: ${err}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -185,31 +186,31 @@ export const CreateTheme: React.FC = () => {
   return (
     <div className="page-container page-container-narrow">
       <PageHeader 
-        eyebrow="Criar Novo Tema"
-        title="Theme Wizard" 
-        subtitle="Configure as propriedades, componentes e dependências do seu novo tema customizado." 
+        eyebrow={t("create.eyebrow")}
+        title={t("create.title")} 
+        subtitle={t("create.subtitle")} 
       />
 
       {/* Step Indicators */}
       <div className="flex justify-between items-center border-b border-hairline pb-4 mb-6">
         <div className={`flex flex-col items-center gap-1 flex-1 ${step >= 1 ? "text-ink" : "text-stone"}`}>
-          <span className="type-micro-caps">Passo 1</span>
-          <span className="type-body-strong">Metadados</span>
+          <span className="type-micro-caps">{t("create.steps.step")} 1</span>
+          <span className="type-body-strong">{t("create.steps.step1")}</span>
           <div className={`h-1 w-full mt-2 ${step >= 1 ? "bg-primary" : "bg-hairline"}`}></div>
         </div>
         <div className={`flex flex-col items-center gap-1 flex-1 ${step >= 2 ? "text-ink" : "text-stone"}`}>
-          <span className="type-micro-caps">Passo 2</span>
-          <span className="type-body-strong">Componentes</span>
+          <span className="type-micro-caps">{t("create.steps.step")} 2</span>
+          <span className="type-body-strong">{t("create.steps.step2")}</span>
           <div className={`h-1 w-full mt-2 ${step >= 2 ? "bg-primary" : "bg-hairline"}`}></div>
         </div>
         <div className={`flex flex-col items-center gap-1 flex-1 ${step >= 3 ? "text-ink" : "text-stone"}`}>
-          <span className="type-micro-caps">Passo 3</span>
-          <span className="type-body-strong">Dependências</span>
+          <span className="type-micro-caps">{t("create.steps.step")} 3</span>
+          <span className="type-body-strong">{t("create.steps.step3")}</span>
           <div className={`h-1 w-full mt-2 ${step >= 3 ? "bg-primary" : "bg-hairline"}`}></div>
         </div>
         <div className={`flex flex-col items-center gap-1 flex-1 ${step >= 4 ? "text-ink" : "text-stone"}`}>
-          <span className="type-micro-caps">Passo 4</span>
-          <span className="type-body-strong">Revisar</span>
+          <span className="type-micro-caps">{t("create.steps.step")} 4</span>
+          <span className="type-body-strong">{t("create.steps.step4")}</span>
           <div className={`h-1 w-full mt-2 ${step >= 4 ? "bg-primary" : "bg-hairline"}`}></div>
         </div>
       </div>
@@ -217,14 +218,14 @@ export const CreateTheme: React.FC = () => {
       {/* Step Contents */}
       {step === 1 && (
         <div className="card-flat space-y-6">
-          <CardSectionHeader title="Metadados do Tema" icon={<FiInfo size={15} />} />
+          <CardSectionHeader title={t("create.form.themeInfo")} icon={<FiInfo size={15} />} />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 -mt-2">
             <div className="form-field-group">
-              <span className="type-meta text-stone">Nome de Exibição</span>
+              <span className="type-meta text-stone">{t("create.form.displayName")}</span>
               <input
                 type="text"
-                placeholder="Ex: Minimal Dark"
+                placeholder={t("create.form.displayNamePlaceholder")}
                 value={displayName}
                 onChange={(e) => handleDisplayNameChange(e.target.value)}
                 className="form-field-input"
@@ -232,22 +233,22 @@ export const CreateTheme: React.FC = () => {
             </div>
 
             <div className="form-field-group">
-              <span className="type-meta text-stone">ID do Tema (Slug)</span>
+              <span className="type-meta text-stone">{t("create.form.identifier")}</span>
               <input
                 type="text"
-                placeholder="Ex: minimal-dark"
+                placeholder={t("create.form.identifierPlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="form-field-input"
               />
-              <span className="type-meta text-stone mt-1">Identificador único (minúsculas, números e hífens).</span>
+              <span className="type-meta text-stone mt-1">{t("create.form.identifierHelp")}</span>
             </div>
 
             <div className="form-field-group">
-              <span className="type-meta text-stone">Versão</span>
+              <span className="type-meta text-stone">{t("create.form.version")}</span>
               <input
                 type="text"
-                placeholder="1.0.0"
+                placeholder={t("create.form.versionPlaceholder")}
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
                 className="form-field-input"
@@ -255,10 +256,10 @@ export const CreateTheme: React.FC = () => {
             </div>
 
             <div className="form-field-group">
-              <span className="type-meta text-stone">Autor</span>
+              <span className="type-meta text-stone">{t("create.form.author")}</span>
               <input
                 type="text"
-                placeholder="Ex: Seu Nome"
+                placeholder={t("create.form.authorPlaceholder")}
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
                 className="form-field-input"
@@ -266,22 +267,22 @@ export const CreateTheme: React.FC = () => {
             </div>
 
             <div className="form-field-group sm:col-span-2">
-              <span className="type-meta text-stone">Descrição</span>
+              <span className="type-meta text-stone">{t("create.form.description")}</span>
               <textarea
                 maxLength={200}
-                placeholder="Breve descrição do tema (máx 200 caracteres)"
+                placeholder={t("create.form.descriptionPlaceholder")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="form-field-input min-h-[80px] py-2"
               />
               <div className="flex justify-between type-meta text-stone mt-1">
-                <span>Será mostrada nas listagens de temas.</span>
+                <span>Description length:</span>
                 <span>{description.length}/200</span>
               </div>
             </div>
 
             <div className="form-field-group">
-              <span className="type-meta text-stone">Licença</span>
+              <span className="type-meta text-stone">License</span>
               <select
                 value={license}
                 onChange={(e) => setLicense(e.target.value)}
@@ -310,23 +311,23 @@ export const CreateTheme: React.FC = () => {
 
       {step === 2 && (
         <div className="card-flat space-y-6">
-          <CardSectionHeader title="Componentes Visuais" icon={<FiGrid size={15} />} />
+          <CardSectionHeader title={t("create.review.components")} icon={<FiGrid size={15} />} />
 
           {loadingComponents ? (
             <div className="flex flex-col items-center justify-center py-10 gap-2">
               <Spinner size="md" className="text-ink" />
-              <span className="type-meta text-stone">Carregando componentes do sistema...</span>
+              <span className="type-meta text-stone">{t("create.placeholders.loading")}</span>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 -mt-2">
               <div className="form-field-group">
-                <span className="type-meta text-stone">Color Scheme</span>
+                <span className="type-meta text-stone">{t("create.form.colorScheme")}</span>
                 <select
                   value={selectedColorScheme}
                   onChange={(e) => setSelectedColorScheme(e.target.value)}
                   className="form-field-input"
                 >
-                  <option value="">-- Ignorar ou Não Definido --</option>
+                  <option value="">{t("create.placeholders.ignore")}</option>
                   {systemColorSchemes.map((c) => (
                     <option key={c.path} value={c.path}>{c.name}</option>
                   ))}
@@ -334,13 +335,13 @@ export const CreateTheme: React.FC = () => {
               </div>
 
               <div className="form-field-group">
-                <span className="type-meta text-stone">Estilo Plasma</span>
+                <span className="type-meta text-stone">{t("create.form.plasmaStyle")}</span>
                 <select
                   value={selectedPlasmaStyle}
                   onChange={(e) => setSelectedPlasmaStyle(e.target.value)}
                   className="form-field-input"
                 >
-                  <option value="">-- Ignorar ou Não Definido --</option>
+                  <option value="">{t("create.placeholders.ignore")}</option>
                   {systemPlasmaStyles.map((p) => (
                     <option key={p.path} value={p.path}>{p.name}</option>
                   ))}
@@ -348,13 +349,13 @@ export const CreateTheme: React.FC = () => {
               </div>
 
               <div className="form-field-group">
-                <span className="type-meta text-stone">Tema de Ícones</span>
+                <span className="type-meta text-stone">{t("create.form.iconTheme")}</span>
                 <select
                   value={selectedIconTheme}
                   onChange={(e) => setSelectedIconTheme(e.target.value)}
                   className="form-field-input"
                 >
-                  <option value="">-- Ignorar ou Não Definido --</option>
+                  <option value="">{t("create.placeholders.ignore")}</option>
                   {systemIconThemes.map((i) => (
                     <option key={i.path} value={i.name}>{i.name}</option>
                   ))}
@@ -362,13 +363,13 @@ export const CreateTheme: React.FC = () => {
               </div>
 
               <div className="form-field-group">
-                <span className="type-meta text-stone">Cursor de Mouse</span>
+                <span className="type-meta text-stone">{t("create.form.cursorTheme")}</span>
                 <select
                   value={selectedCursorTheme}
                   onChange={(e) => setSelectedCursorTheme(e.target.value)}
                   className="form-field-input"
                 >
-                  <option value="">-- Ignorar ou Não Definido --</option>
+                  <option value="">{t("create.placeholders.ignore")}</option>
                   {systemCursorThemes.map((c) => (
                     <option key={c.path} value={c.name}>{c.name}</option>
                   ))}
@@ -376,13 +377,13 @@ export const CreateTheme: React.FC = () => {
               </div>
 
               <div className="form-field-group">
-                <span className="type-meta text-stone">Tema Kvantum</span>
+                <span className="type-meta text-stone">{t("create.form.kvantumTheme")}</span>
                 <select
                   value={selectedKvantumTheme}
                   onChange={(e) => setSelectedKvantumTheme(e.target.value)}
                   className="form-field-input"
                 >
-                  <option value="">-- Ignorar ou Não Definido --</option>
+                  <option value="">{t("create.placeholders.ignore")}</option>
                   {systemKvantumThemes.map((k) => (
                     <option key={k.path} value={k.name}>{k.name}</option>
                   ))}
@@ -390,13 +391,13 @@ export const CreateTheme: React.FC = () => {
               </div>
 
               <div className="form-field-group">
-                <span className="type-meta text-stone">Tema GTK</span>
+                <span className="type-meta text-stone">{t("create.form.gtkTheme")}</span>
                 <select
                   value={selectedGtkTheme}
                   onChange={(e) => setSelectedGtkTheme(e.target.value)}
                   className="form-field-input"
                 >
-                  <option value="">-- Ignorar ou Não Definido --</option>
+                  <option value="">{t("create.placeholders.ignore")}</option>
                   {systemGtkThemes.map((g) => (
                     <option key={g.path} value={g.name}>{g.name}</option>
                   ))}
@@ -404,7 +405,7 @@ export const CreateTheme: React.FC = () => {
               </div>
 
               <div className="form-field-group">
-                <span className="type-meta text-stone">Perfil do Konsole</span>
+                <span className="type-meta text-stone">{t("create.form.konsoleProfile")}</span>
                 <input
                   type="text"
                   placeholder="Ex: Breeze.profile"
@@ -415,16 +416,16 @@ export const CreateTheme: React.FC = () => {
               </div>
 
               <div className="form-field-group sm:col-span-2">
-                <span className="type-meta text-stone">Wallpaper (Imagem)</span>
+                <span className="type-meta text-stone">{t("create.form.wallpaper")}</span>
                 <div className="flex items-center gap-4 mt-2">
                   <Button variant="ghost" onClick={handleSelectWallpaper} className="flex gap-2 items-center">
                     <FiImage />
-                    <span>Selecionar Imagem</span>
+                    <span>{t("create.buttons.selectImage")}</span>
                   </Button>
                   {wallpaperPath ? (
                     <span className="type-meta text-graphite truncate max-w-md">{wallpaperPath}</span>
                   ) : (
-                    <span className="type-meta text-stone italic">Nenhum wallpaper selecionado</span>
+                    <span className="type-meta text-stone italic">{t("create.buttons.noImage")}</span>
                   )}
                 </div>
                 {wallpaperPath && (
@@ -444,22 +445,22 @@ export const CreateTheme: React.FC = () => {
 
       {step === 3 && (
         <div className="card-flat space-y-6">
-          <CardSectionHeader title="Dependências do Tema" icon={<FiPackage size={15} />} />
+          <CardSectionHeader title={t("create.steps.step3")} icon={<FiPackage size={15} />} />
 
           <div className="space-y-6 -mt-2">
             {/* Packages */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="type-body-strong text-ink">Pacotes do Sistema (e.g. kvantum, fastfetch)</span>
+                <span className="type-body-strong text-ink">{t("create.placeholders.pkgName")} ({t("create.form.currentValue")} Linux packages)</span>
                 <Button variant="ghost" className="btn-sm" onClick={() => setDepPackages([...depPackages, ""])}>
-                  <FiPlus /> Add
+                  <FiPlus /> {t("create.buttons.add")}
                 </Button>
               </div>
               {depPackages.map((pkg, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <input
                     type="text"
-                    placeholder="Nome do pacote"
+                    placeholder={t("create.placeholders.pkgName")}
                     value={pkg}
                     onChange={(e) => {
                       const updated = [...depPackages];
@@ -474,23 +475,23 @@ export const CreateTheme: React.FC = () => {
                 </div>
               ))}
               {depPackages.length === 0 && (
-                <span className="type-meta text-stone italic block">Nenhuma dependência de pacotes declarada.</span>
+                <span className="type-meta text-stone italic block">{t("create.placeholders.noPkg")}</span>
               )}
             </div>
 
             {/* Fonts */}
             <div className="space-y-3 border-t border-hairline-soft pt-4">
               <div className="flex justify-between items-center">
-                <span className="type-body-strong text-ink">Fontes Necessárias (e.g. JetBrainsMono Nerd Font)</span>
+                <span className="type-body-strong text-ink">{t("create.placeholders.fontName")} (e.g. Fira Code)</span>
                 <Button variant="ghost" className="btn-sm" onClick={() => setDepFonts([...depFonts, ""])}>
-                  <FiPlus /> Add
+                  <FiPlus /> {t("create.buttons.add")}
                 </Button>
               </div>
               {depFonts.map((font, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <input
                     type="text"
-                    placeholder="Nome da fonte"
+                    placeholder={t("create.placeholders.fontName")}
                     value={font}
                     onChange={(e) => {
                       const updated = [...depFonts];
@@ -505,23 +506,23 @@ export const CreateTheme: React.FC = () => {
                 </div>
               ))}
               {depFonts.length === 0 && (
-                <span className="type-meta text-stone italic block">Nenhuma dependência de fontes declarada.</span>
+                <span className="type-meta text-stone italic block">{t("create.placeholders.noFont")}</span>
               )}
             </div>
 
             {/* Icons */}
             <div className="space-y-3 border-t border-hairline-soft pt-4">
               <div className="flex justify-between items-center">
-                <span className="type-body-strong text-ink">Temas de Ícones Requeridos</span>
+                <span className="type-body-strong text-ink">{t("create.placeholders.iconName")}</span>
                 <Button variant="ghost" className="btn-sm" onClick={() => setDepIcons([...depIcons, ""])}>
-                  <FiPlus /> Add
+                  <FiPlus /> {t("create.buttons.add")}
                 </Button>
               </div>
               {depIcons.map((icon, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <input
                     type="text"
-                    placeholder="Nome do tema de ícones"
+                    placeholder={t("create.placeholders.iconName")}
                     value={icon}
                     onChange={(e) => {
                       const updated = [...depIcons];
@@ -536,7 +537,7 @@ export const CreateTheme: React.FC = () => {
                 </div>
               ))}
               {depIcons.length === 0 && (
-                <span className="type-meta text-stone italic block">Nenhum tema de ícone requerido declarado.</span>
+                <span className="type-meta text-stone italic block">{t("create.placeholders.noIcon")}</span>
               )}
             </div>
           </div>
@@ -546,27 +547,27 @@ export const CreateTheme: React.FC = () => {
       {step === 4 && (
         <div className="space-y-4">
           <div className="card-flat space-y-6">
-            <CardSectionHeader title="Revisar e Concluir" icon={<FiCheckCircle size={15} />} />
+            <CardSectionHeader title={t("create.review.title")} icon={<FiCheckCircle size={15} />} />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 -mt-2">
               <div className="border border-hairline-soft p-4 bg-canvas-warm space-y-3">
-                <span className="type-micro-caps text-stone block">Metadados do Tema</span>
+                <span className="type-micro-caps text-stone block">{t("create.review.themeMetadata")}</span>
                 <div className="space-y-2">
                   <div>
-                    <span className="type-meta text-stone block">Nome:</span>
+                    <span className="type-meta text-stone block">Name:</span>
                     <span className="type-body-strong text-ink">{displayName} ({name})</span>
                   </div>
                   <div>
-                    <span className="type-meta text-stone block">Versão:</span>
+                    <span className="type-meta text-stone block">Version:</span>
                     <span className="type-body-strong text-ink">{version}</span>
                   </div>
                   <div>
-                    <span className="type-meta text-stone block">Autor / Licença:</span>
-                    <span className="type-body-strong text-ink">{author || "Não informado"} / {license}</span>
+                    <span className="type-meta text-stone block">Author / License:</span>
+                    <span className="type-body-strong text-ink">{author || t("create.review.notProvided")} / {license}</span>
                   </div>
                   {description && (
                     <div>
-                      <span className="type-meta text-stone block">Descrição:</span>
+                      <span className="type-meta text-stone block">Description:</span>
                       <span className="type-body text-graphite">{description}</span>
                     </div>
                   )}
@@ -574,37 +575,37 @@ export const CreateTheme: React.FC = () => {
               </div>
 
               <div className="border border-hairline-soft p-4 bg-canvas-warm space-y-3">
-                <span className="type-micro-caps text-stone block">Componentes</span>
+                <span className="type-micro-caps text-stone block">{t("create.review.components")}</span>
                 <div className="space-y-1">
                   <div className="flex justify-between type-meta">
-                    <span className="text-stone">Color Scheme:</span>
+                    <span className="text-stone">{t("create.form.colorScheme")}:</span>
                     <span className="text-ink font-semibold truncate max-w-[200px]">
-                      {selectedColorScheme ? systemColorSchemes.find(c => c.path === selectedColorScheme)?.name || "Local Path" : "Nenhum"}
+                      {selectedColorScheme ? systemColorSchemes.find(c => c.path === selectedColorScheme)?.name || "Local Path" : t("create.review.none")}
                     </span>
                   </div>
                   <div className="flex justify-between type-meta">
-                    <span className="text-stone">Plasma Style:</span>
+                    <span className="text-stone">{t("create.form.plasmaStyle")}:</span>
                     <span className="text-ink font-semibold truncate max-w-[200px]">
-                      {selectedPlasmaStyle ? systemPlasmaStyles.find(p => p.path === selectedPlasmaStyle)?.name || "Local Path" : "Nenhum"}
+                      {selectedPlasmaStyle ? systemPlasmaStyles.find(p => p.path === selectedPlasmaStyle)?.name || "Local Path" : t("create.review.none")}
                     </span>
                   </div>
                   <div className="flex justify-between type-meta">
-                    <span className="text-stone">Ícones:</span>
-                    <span className="text-ink font-semibold truncate max-w-[200px]">{selectedIconTheme || "Nenhum"}</span>
+                    <span className="text-stone">{t("create.form.iconTheme")}:</span>
+                    <span className="text-ink font-semibold truncate max-w-[200px]">{selectedIconTheme || t("create.review.none")}</span>
                   </div>
                   <div className="flex justify-between type-meta">
-                    <span className="text-stone">Cursor:</span>
-                    <span className="text-ink font-semibold truncate max-w-[200px]">{selectedCursorTheme || "Nenhum"}</span>
+                    <span className="text-stone">{t("create.form.cursorTheme")}:</span>
+                    <span className="text-ink font-semibold truncate max-w-[200px]">{selectedCursorTheme || t("create.review.none")}</span>
                   </div>
                   <div className="flex justify-between type-meta">
                     <span className="text-stone">Kvantum / GTK:</span>
                     <span className="text-ink font-semibold truncate max-w-[200px]">
-                      {selectedKvantumTheme || "Nenhum"} / {selectedGtkTheme || "Nenhum"}
+                      {selectedKvantumTheme || t("create.review.none")} / {selectedGtkTheme || t("create.review.none")}
                     </span>
                   </div>
                   <div className="flex justify-between type-meta">
-                    <span className="text-stone">Wallpaper:</span>
-                    <span className="text-ink font-semibold truncate max-w-[200px]">{wallpaperPath ? "Selecionado" : "Nenhum"}</span>
+                    <span className="text-stone">{t("create.form.wallpaper")}:</span>
+                    <span className="text-ink font-semibold truncate max-w-[200px]">{wallpaperPath ? t("create.review.selected") : t("create.review.none")}</span>
                   </div>
                 </div>
               </div>
@@ -612,12 +613,12 @@ export const CreateTheme: React.FC = () => {
           </div>
 
           <div className="card-flat">
-            <CardSectionHeader title="Opções de Criação" icon={<FiFileText size={15} />} />
+            <CardSectionHeader title={t("create.review.options")} icon={<FiFileText size={15} />} />
             
             <div className="flex items-center justify-between py-2 -mt-2">
               <div className="space-y-0.5">
-                <span className="type-body-strong text-ink block">Empacotar como arquivo .theme</span>
-                <span className="type-meta text-stone block">Gera um pacote compactado .theme pronto para compartilhamento.</span>
+                <span className="type-body-strong text-ink block">{t("create.review.packTheme")}</span>
+                <span className="type-meta text-stone block">{t("create.review.packThemeDesc")}</span>
               </div>
               <Switch 
                 isSelected={alsoPack}
@@ -639,7 +640,7 @@ export const CreateTheme: React.FC = () => {
         <div>
           {step > 1 && (
             <Button variant="ghost" onClick={() => setStep(step - 1)} disabled={isSubmitting}>
-              <FiArrowLeft /> Voltar
+              <FiArrowLeft /> {t("create.buttons.back")}
             </Button>
           )}
         </div>
@@ -652,7 +653,7 @@ export const CreateTheme: React.FC = () => {
                 setStep(step + 1);
               }
             }}>
-              Avançar <FiArrowRight />
+              {t("create.buttons.next")} <FiArrowRight />
             </Button>
           ) : (
             <Button variant="primary" onClick={handleSubmit} disabled={isSubmitting}>
@@ -661,7 +662,7 @@ export const CreateTheme: React.FC = () => {
               ) : (
                 <>
                   <FiCheckCircle />
-                  <span>Criar Tema</span>
+                  <span>{t("create.buttons.generate")}</span>
                 </>
               )}
             </Button>

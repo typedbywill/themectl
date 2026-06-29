@@ -1,9 +1,9 @@
 import React from "react";
 import { Spinner } from "@heroui/react";
-import { PageHeader } from "../components/layout/PageHeader";
 import { Button } from "../components/ui/Button";
 import { CardSectionHeader } from "../components/ui/CardSectionHeader";
 import { useBackups, useRestoreBackup, useDeleteBackup } from "../hooks/useBackups";
+import { useTranslation } from "../hooks/useTranslation";
 import {
   FiClock,
   FiCornerUpLeft,
@@ -14,7 +14,8 @@ import {
   FiArchive,
 } from "react-icons/fi";
 
-export const Backups: React.FC = () => {
+export const BackupsTab: React.FC = () => {
+  const { t } = useTranslation();
   const { data: backups, isLoading } = useBackups();
   const restoreMutation = useRestoreBackup();
   const deleteMutation = useDeleteBackup();
@@ -23,61 +24,55 @@ export const Backups: React.FC = () => {
   const restorePoints = backups?.filter((snap) => !snap.is_current).length ?? 0;
 
   const handleRestore = (timestamp: string) => {
-    if (confirm(`Are you sure you want to rollback desktop configuration to snapshot '${timestamp}'?`)) {
+    if (confirm(t("backups.confirmRestore", { timestamp }))) {
       restoreMutation.mutate(timestamp);
     }
   };
 
   const handleDelete = (timestamp: string) => {
-    if (confirm(`Are you sure you want to permanently delete snapshot '${timestamp}'?`)) {
+    if (confirm(t("backups.confirmDelete", { timestamp }))) {
       deleteMutation.mutate(timestamp);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
         <Spinner size="md" className="text-ink" />
-        <span className="type-meta text-stone">Loading backups...</span>
+        <span className="type-meta text-stone">{t("backups.loading")}</span>
       </div>
     );
   }
 
   return (
-    <div className="page-container">
-      <PageHeader
-        eyebrow="Configuration Rollback"
-        title="Backups"
-        subtitle="Manage visual configuration snapshots. You can restore your desktop layout at any time."
-      />
-
+    <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="card-flat">
-          <p className="type-micro-caps text-stone">Total Snapshots</p>
+          <p className="type-micro-caps text-stone">{t("backups.total")}</p>
           <p className="stat-value text-ink mt-1">{backups?.length ?? 0}</p>
         </div>
         <div className="card-flat">
-          <p className="type-micro-caps text-stone">Restore Points</p>
+          <p className="type-micro-caps text-stone">{t("backups.points")}</p>
           <p className="stat-value text-ink mt-1">{restorePoints}</p>
           {activeBackup && (
             <p className="type-meta text-stone mt-2 truncate">
-              Active: <span className="text-ink">{activeBackup.timestamp}</span>
+              {t("backups.active")}: <span className="text-ink">{activeBackup.timestamp}</span>
             </p>
           )}
         </div>
       </div>
 
       {backups?.length === 0 ? (
-        <div className="empty-state text-stone">
+        <div className="empty-state text-stone py-12 border border-dashed border-hairline-soft flex flex-col items-center justify-center">
           <FiAlertTriangle size={32} className="text-stone mb-4" />
-          <p className="type-body-strong text-ink">No backup snapshots found</p>
-          <p className="type-meta text-stone mt-1 max-w-[28rem]">
-            Backups are generated automatically when a new theme package is applied.
+          <p className="type-body-strong text-ink">{t("backups.noBackups")}</p>
+          <p className="type-meta text-stone mt-1 max-w-[28rem] text-center">
+            {t("backups.noBackupsDesc")}
           </p>
         </div>
       ) : (
         <section className="space-y-4">
-          <CardSectionHeader title="Snapshot History" icon={<FiArchive size={12} />} />
+          <CardSectionHeader title={t("backups.history")} icon={<FiArchive size={12} />} />
 
           <div className="grid grid-cols-1 gap-4 -mt-2">
             {backups?.map((snap) => (
@@ -95,41 +90,41 @@ export const Backups: React.FC = () => {
                       {snap.is_current ? (
                         <span className="monochrome-badge monochrome-badge-active gap-1">
                           <FiCheckCircle size={12} />
-                          <span>Active configuration</span>
+                          <span>{t("backups.activeConfig")}</span>
                         </span>
                       ) : (
                         <span className="monochrome-badge monochrome-badge-outline">
-                          Restore point
+                          {t("backups.restorePoint")}
                         </span>
                       )}
                     </div>
 
                     <p className="type-meta text-stone">
-                      Created {new Date(snap.created_at).toLocaleString()}
+                      {t("backups.created")} {new Date(snap.created_at).toLocaleString()}
                     </p>
 
                     {snap.theme_applied && (
                       <div className="type-meta text-stone bg-canvas-warm border border-hairline-soft p-3">
-                        Theme at capture:{" "}
+                        {t("backups.themeAtCapture")}{" "}
                         <span className="text-ink type-body-strong">{snap.theme_applied}</span>
                       </div>
                     )}
 
                     <div className="meta-grid">
                       <div className="meta-grid-item">
-                        <span className="type-micro-caps text-stone block">Plasma Style</span>
+                        <span className="type-micro-caps text-stone block">{t("backups.plasmaStyle")}</span>
                         <span className="type-body-tight text-ink truncate block mt-1">
                           {snap.plasma_style || "None"}
                         </span>
                       </div>
                       <div className="meta-grid-item">
-                        <span className="type-micro-caps text-stone block">Color Scheme</span>
+                        <span className="type-micro-caps text-stone block">{t("backups.colorScheme")}</span>
                         <span className="type-body-tight text-ink truncate block mt-1">
                           {snap.color_scheme || "None"}
                         </span>
                       </div>
                       <div className="meta-grid-item">
-                        <span className="type-micro-caps text-stone block">Icon Theme</span>
+                        <span className="type-micro-caps text-stone block">{t("backups.iconTheme")}</span>
                         <span className="type-body-tight text-ink truncate block mt-1">
                           {snap.icon_theme || "None"}
                         </span>
@@ -137,10 +132,12 @@ export const Backups: React.FC = () => {
                       <div className="meta-grid-item">
                         <span className="type-micro-caps text-stone block flex items-center gap-1">
                           <FiLayers size={11} />
-                          Components
+                          {t("backups.components")}
                         </span>
                         <span className="type-body-tight text-ink block mt-1">
-                          {[snap.plasma_style, snap.color_scheme, snap.icon_theme].filter(Boolean).length} captured
+                          {t("backups.componentsCount", {
+                            count: [snap.plasma_style, snap.color_scheme, snap.icon_theme].filter(Boolean).length
+                          })}
                         </span>
                       </div>
                     </div>
@@ -151,7 +148,7 @@ export const Backups: React.FC = () => {
                       variant="icon-danger"
                       onClick={() => handleDelete(snap.timestamp)}
                       disabled={restoreMutation.isPending || deleteMutation.isPending}
-                      title="Permanently delete snapshot"
+                      title={t("backups.deleteTitle")}
                       aria-label="Delete snapshot"
                     >
                       {deleteMutation.isPending && deleteMutation.variables === snap.timestamp ? (
@@ -172,7 +169,7 @@ export const Backups: React.FC = () => {
                         ) : (
                           <>
                             <FiCornerUpLeft size={14} />
-                            <span>Restore</span>
+                            <span>{t("common.apply")}</span>
                           </>
                         )}
                       </Button>
@@ -187,4 +184,5 @@ export const Backups: React.FC = () => {
     </div>
   );
 };
-export default Backups;
+
+export default BackupsTab;

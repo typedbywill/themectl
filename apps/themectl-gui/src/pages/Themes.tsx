@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
-import { Button } from "../components/ui/Button";
+import { Button, ButtonLink } from "../components/ui/Button";
 import { CardSectionHeader } from "../components/ui/CardSectionHeader";
 import { SearchInput } from "../components/ui/SearchInput";
 import { useAvailableThemes, useInstallTheme } from "../hooks/useThemes";
+import { useTranslation } from "../hooks/useTranslation";
 import {
   FiDownload,
   FiCheck,
@@ -12,6 +13,7 @@ import {
   FiShield,
   FiAlertTriangle,
   FiPackage,
+  FiPlus,
 } from "react-icons/fi";
 
 function formatBytes(bytes: number | null): string | null {
@@ -22,6 +24,7 @@ function formatBytes(bytes: number | null): string | null {
 }
 
 export const Themes: React.FC = () => {
+  const { t } = useTranslation();
   const { data: themes, isLoading, refetch } = useAvailableThemes();
   const installMutation = useInstallTheme();
   const [search, setSearch] = useState("");
@@ -50,7 +53,7 @@ export const Themes: React.FC = () => {
   const getSignatureBadge = () => (
     <span className="monochrome-badge monochrome-badge-secondary gap-1">
       <FiShield size={12} />
-      <span>Verified</span>
+      <span>{t("installed.verified")}</span>
     </span>
   );
 
@@ -58,7 +61,7 @@ export const Themes: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <Spinner size="md" className="text-ink" />
-        <span className="type-meta text-stone">Loading theme catalog...</span>
+        <span className="type-meta text-stone">{t("store.loadingCatalog")}</span>
       </div>
     );
   }
@@ -66,27 +69,33 @@ export const Themes: React.FC = () => {
   return (
     <div className="page-container">
       <PageHeader
-        eyebrow="Theme store"
-        title="Discover Themes"
-        subtitle="Discover and download new visual configurations from your active repositories."
+        eyebrow={t("store.eyebrow")}
+        title={t("store.title")}
+        subtitle={t("store.subtitle")}
         actions={
-          <Button variant="ghost" onClick={() => refetch()}>
-            Refresh Catalog
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => refetch()}>
+              {t("store.refresh")}
+            </Button>
+            <ButtonLink to="/create" variant="primary">
+              <FiPlus size={14} />
+              <span>{t("sidebar.createTheme")}</span>
+            </ButtonLink>
+          </div>
         }
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="card-flat">
-          <p className="type-micro-caps text-stone">Available</p>
+          <p className="type-micro-caps text-stone">{t("store.available")}</p>
           <p className="stat-value text-ink mt-1">{themes?.length ?? 0}</p>
         </div>
         <div className="card-flat">
-          <p className="type-micro-caps text-stone">Installed</p>
+          <p className="type-micro-caps text-stone">{t("store.installedCount")}</p>
           <p className="stat-value text-ink mt-1">{installedCount}</p>
         </div>
         <div className="card-flat">
-          <p className="type-micro-caps text-stone">Sources</p>
+          <p className="type-micro-caps text-stone">{t("store.sourcesCount")}</p>
           <p className="stat-value text-ink mt-1">{sourceCount}</p>
         </div>
       </div>
@@ -95,38 +104,38 @@ export const Themes: React.FC = () => {
         <div className="flex flex-col gap-4 border-b border-hairline-soft pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="form-field-group flex-1 min-w-0 sm:max-w-[28rem]">
             <label htmlFor="theme-search" className="type-meta text-stone">
-              Search catalog
+              {t("store.searchLabel")}
             </label>
             <SearchInput
               id="theme-search"
               value={search}
               onChange={setSearch}
-              placeholder="Name, author, description or source..."
+              placeholder={t("store.searchPlaceholder")}
             />
           </div>
           <p className="type-meta text-stone shrink-0 pb-1">
-            {filteredThemes.length} of {themes?.length ?? 0} themes
+            {t("store.themesFilterCount", { filtered: filteredThemes.length, total: themes?.length ?? 0 })}
           </p>
         </div>
 
         {filteredThemes.length === 0 ? (
           <div className="empty-state text-stone">
             <FiAlertTriangle size={32} className="text-stone mb-4" />
-            <p className="type-body-strong text-ink">No themes found</p>
+            <p className="type-body-strong text-ink">{t("store.noThemes")}</p>
             <p className="type-meta text-stone mt-1 max-w-[24rem]">
               {search
-                ? "Try different search terms or clear the filter."
-                : "Verify your repositories are configured and refreshed."}
+                ? t("store.noThemesDesc")
+                : t("store.noThemesDescRepo")}
             </p>
             {search && (
               <Button variant="ghost" onClick={() => setSearch("")} className="mt-5">
-                Clear search
+                {t("store.clearSearch")}
               </Button>
             )}
           </div>
         ) : (
           <>
-            <CardSectionHeader title="Catalog" icon={<FiPackage size={12} />} />
+            <CardSectionHeader title={t("store.catalogTitle")} icon={<FiPackage size={12} />} />
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 -mt-2">
               {filteredThemes.map((theme) => {
                 const sizeLabel = formatBytes(theme.size_bytes);
@@ -159,7 +168,7 @@ export const Themes: React.FC = () => {
                       <h4 className="type-heading-sm text-ink group-hover:underline">
                         {theme.display_name || theme.name}
                       </h4>
-                      <p className="type-meta text-stone">by {theme.author || "Unknown"}</p>
+                      <p className="type-meta text-stone">{t("store.by")} {theme.author || "Unknown"}</p>
                       <p className="type-body text-graphite line-clamp-3 pt-1">
                         {theme.description || "No description provided."}
                       </p>
@@ -177,7 +186,7 @@ export const Themes: React.FC = () => {
                       {theme.is_installed ? (
                         <span className="monochrome-badge monochrome-badge-active gap-1 shrink-0">
                           <FiCheck size={13} />
-                          <span>Installed</span>
+                          <span>{t("store.installedBadge")}</span>
                         </span>
                       ) : (
                         <Button
@@ -195,7 +204,7 @@ export const Themes: React.FC = () => {
                           ) : (
                             <>
                               <FiDownload size={14} />
-                              <span>Install</span>
+                              <span>{t("store.install")}</span>
                             </>
                           )}
                         </Button>

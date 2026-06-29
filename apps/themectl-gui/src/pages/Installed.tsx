@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
 import { Button, ButtonLink } from "../components/ui/Button";
 import { useInstalledThemes, useRemoveTheme } from "../hooks/useThemes";
+import { useTranslation } from "../hooks/useTranslation";
 import { PreviewModal } from "../components/themes/PreviewModal";
 import { 
   FiCheckCircle, 
@@ -13,12 +14,14 @@ import {
   FiTrash2, 
   FiShield, 
   FiAlertTriangle,
-  FiCalendar
+  FiCalendar,
+  FiPlus
 } from "react-icons/fi";
 import { toast } from "sonner";
 import { api } from "../services/api";
 
 export const Installed: React.FC = () => {
+  const { t } = useTranslation();
   const { data: themes, isLoading } = useInstalledThemes();
   const removeMutation = useRemoveTheme();
   const [selectedThemeForPreview, setSelectedThemeForPreview] = useState<string | null>(null);
@@ -29,7 +32,7 @@ export const Installed: React.FC = () => {
   };
 
   const handleRemove = (themeName: string) => {
-    if (confirm(`Are you sure you want to uninstall theme '${themeName}'?`)) {
+    if (confirm(t("installed.confirmUninstall", { name: themeName }))) {
       removeMutation.mutate({ name: themeName, force: true });
     }
   };
@@ -37,13 +40,13 @@ export const Installed: React.FC = () => {
   const handleExport = async (themeName: string) => {
     try {
       setExporting(themeName);
-      toast.info(`Preparing to export theme '${themeName}'...`);
+      toast.info(t("installed.exportingInfo", { name: themeName }));
       const timestamp = new Date().toISOString().split('T')[0];
       const filename = `my-theme-${themeName}-${timestamp}.theme`;
       const res = await api.exportTheme(filename);
       toast.success(res || `Theme exported to ${filename}`);
     } catch (e: any) {
-      toast.error(e?.message || e || "Failed to export theme");
+      toast.error(e?.message || e || t("installed.exportFailed"));
     } finally {
       setExporting(null);
     }
@@ -54,21 +57,21 @@ export const Installed: React.FC = () => {
       return (
         <span className="monochrome-badge monochrome-badge-outline gap-1 text-ink">
           <FiShield size={12} className="text-stone" />
-          <span>Verified</span>
+          <span>{t("installed.verified")}</span>
         </span>
       );
     } else if (status === "Unsigned") {
       return (
         <span className="monochrome-badge monochrome-badge-outline gap-1 text-stone">
           <FiAlertTriangle size={12} />
-          <span>Unsigned</span>
+          <span>{t("installed.unsigned")}</span>
         </span>
       );
     } else {
       return (
         <span className="monochrome-badge monochrome-badge-outline border-red-200 text-red-500 gap-1">
           <FiAlertTriangle size={12} />
-          <span>Invalid</span>
+          <span>{t("installed.invalid")}</span>
         </span>
       );
     }
@@ -78,7 +81,7 @@ export const Installed: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <Spinner size="md" className="text-ink" />
-        <span className="type-meta text-stone">Loading installed themes...</span>
+        <span className="type-meta text-stone">{t("installed.loadingThemes")}</span>
       </div>
     );
   }
@@ -86,18 +89,24 @@ export const Installed: React.FC = () => {
   return (
     <div className="page-container">
       <PageHeader 
-        eyebrow="Local storage"
-        title="Installed Themes" 
-        subtitle="Manage and apply themes installed on your machine." 
+        eyebrow={t("installed.eyebrow")}
+        title={t("installed.title")} 
+        subtitle={t("installed.subtitle")} 
+        actions={
+          <ButtonLink to="/create" variant="primary">
+            <FiPlus size={14} />
+            <span>{t("sidebar.createTheme")}</span>
+          </ButtonLink>
+        }
       />
 
       {themes?.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline-soft text-stone">
           <FiAlertTriangle size={32} className="text-stone mb-4" />
-          <p className="type-body-strong text-ink">No themes installed yet</p>
-          <p className="type-meta text-stone mt-1 mb-5">You can download new themes from the store.</p>
+          <p className="type-body-strong text-ink">{t("installed.noThemes")}</p>
+          <p className="type-meta text-stone mt-1 mb-5">{t("installed.noThemesDesc")}</p>
           <ButtonLink to="/themes" variant="primary">
-            Go to Theme Store
+            {t("installed.goToStore")}
           </ButtonLink>
         </div>
       ) : (
@@ -114,7 +123,7 @@ export const Installed: React.FC = () => {
                     {theme.is_applied && (
                       <span className="monochrome-badge monochrome-badge-active gap-1">
                         <FiCheckCircle size={13} />
-                        <span>Applied</span>
+                        <span>{t("installed.applied")}</span>
                       </span>
                     )}
                     {getSignatureBadge(theme.signature_status)}
@@ -125,26 +134,26 @@ export const Installed: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-4 type-meta text-stone pt-1">
                     <span className="flex items-center gap-1.5">
                       <FiCalendar size={13} />
-                      Installed: {new Date(theme.installed_at).toLocaleDateString()}
+                      {t("installed.installedAt")}: {new Date(theme.installed_at).toLocaleDateString()}
                     </span>
-                    <span>Version: {theme.version}</span>
-                    {theme.author && <span>by {theme.author}</span>}
+                    <span>{t("installed.version")}: {theme.version}</span>
+                    {theme.author && <span>{t("installed.by")} {theme.author}</span>}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                  <Link to={`/installed/${theme.name}`} title="Theme Details">
-                    <Button variant="icon" aria-label="Theme details">
+                  <Link to={`/installed/${theme.name}`} title={t("installed.detailsTitle")}>
+                    <Button variant="icon" aria-label={t("installed.detailsTitle")}>
                       <FiInfo size={16} />
                     </Button>
                   </Link>
 
                   <Button 
                     variant="icon"
-                    title="Export Theme package"
+                    title={t("installed.exportTitle")}
                     onClick={() => handleExport(theme.name)}
                     disabled={exporting === theme.name}
-                    aria-label="Export theme"
+                    aria-label={t("installed.exportTitle")}
                   >
                     {exporting === theme.name ? (
                       <Spinner size="sm" className="text-ink" />
@@ -155,10 +164,10 @@ export const Installed: React.FC = () => {
 
                   <Button 
                     variant="icon-danger"
-                    title="Uninstall Theme"
+                    title={t("installed.uninstallTitle")}
                     onClick={() => handleRemove(theme.name)}
                     disabled={removeMutation.isPending && removeMutation.variables?.name === theme.name}
-                    aria-label="Uninstall theme"
+                    aria-label={t("installed.uninstallTitle")}
                   >
                     {removeMutation.isPending && removeMutation.variables?.name === theme.name ? (
                       <Spinner size="sm" className="text-ink" />
@@ -172,7 +181,7 @@ export const Installed: React.FC = () => {
                     onClick={() => handleApplyClick(theme.name)}
                   >
                     <FiPlay size={14} />
-                    <span>Apply Theme</span>
+                    <span>{t("installed.applyTheme")}</span>
                   </Button>
                 </div>
               </div>
