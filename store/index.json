@@ -1,0 +1,29 @@
+{
+  "name": "Themectl Dev Store",
+  "description": "Repositório local de temas para testes internos do projeto themectl.",
+  "version": "1.0.0",
+  "themes": [
+    {
+      "name": "nexus-desktop",
+      "display_name": "Nexus Desktop",
+      "version": "1.0.0",
+      "description": "Tema de exemplo exportado do desktop KDE Plasma atual. Inclui esquema de cores KvMojave, wallpaper e estilo Plasma darkly.",
+      "author": "nexus",
+      "license": "MIT",
+      "supports": ["kde-plasma-6"],
+      "download_url": "http://127.0.0.1:8765/themes/nexus-desktop.theme",
+      "size_bytes": 1619316
+    },
+    {
+      "name": "catppuccin-mocha",
+      "display_name": "Catppuccin Mocha",
+      "version": "1.0.0",
+      "description": "Tema pastel Catppuccin Mocha para KDE Plasma 6. Esquema de cores oficial (acento Mauve) e wallpaper em gradiente.",
+      "author": "Catppuccin",
+      "license": "MIT",
+      "supports": ["kde-plasma-6"],
+      "download_url": "http://127.0.0.1:8765/themes/catppuccin-mocha.theme",
+      "size_bytes": 4108
+    }
+  ]
+}

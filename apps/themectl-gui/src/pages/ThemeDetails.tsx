@@ -1,7 +1,9 @@
 import React from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
+import { CardSectionHeader } from "../components/ui/CardSectionHeader";
+import { Button, ButtonLink } from "../components/ui/Button";
 import { useThemeDetails } from "../hooks/useThemes";
 import { 
   FiArrowLeft, 
@@ -33,11 +35,11 @@ export const ThemeDetails: React.FC = () => {
 
   if (error || !theme) {
     return (
-      <div className="space-y-4 max-w-7xl mx-auto">
-        <Link to="/installed" className="btn-text-link type-link-sm text-stone hover:text-ink">
+      <div className="page-container">
+        <ButtonLink to="/installed" variant="text" className="text-stone hover:text-ink">
           <FiArrowLeft /> back to installed
-        </Link>
-        <div className="text-red-500 text-sm py-4">
+        </ButtonLink>
+        <div className="type-body text-stone py-4">
           Failed to load theme details: {String(error || "Theme not found")}
         </div>
       </div>
@@ -70,34 +72,25 @@ export const ThemeDetails: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      <div>
-        <Link to="/installed" className="btn-text-link type-link-sm text-stone hover:text-ink">
-          <FiArrowLeft /> back to installed
-        </Link>
-      </div>
+    <div className="page-container">
+      <ButtonLink to="/installed" variant="text" className="text-stone hover:text-ink -mb-4">
+        <FiArrowLeft /> back to installed
+      </ButtonLink>
 
       <PageHeader 
         eyebrow="Theme Details"
         title={theme.display_name || theme.name} 
         subtitle={`Installed version: ${theme.version}`}
         actions={
-          <button
-            className="btn-primary"
-            onClick={() => openPreviewModal(theme.name)}
-          >
-            <div className="flex items-center gap-1.5">
-              <FiPlay size={14} />
-              <span>Apply Theme</span>
-            </div>
-          </button>
+          <Button variant="primary" onClick={() => openPreviewModal(theme.name)}>
+            <FiPlay size={14} />
+            <span>Apply Theme</span>
+          </Button>
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Info & Meta panel */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Metadata Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-4">
           <div className="card-flat">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
@@ -107,52 +100,54 @@ export const ThemeDetails: React.FC = () => {
                 )}
               </div>
 
-              <div className="type-body text-graphite leading-relaxed">
+              <p className="type-body text-graphite leading-relaxed">
                 {theme.description || "No description provided for this theme."}
-              </div>
+              </p>
 
               <hr className="border-t border-hairline-soft" />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 type-meta">
                 <div className="flex items-center gap-2 text-stone">
                   <FiUser size={15} />
-                  <span>Author: <strong className="text-ink font-medium">{theme.author || "Unknown"}</strong></span>
+                  <span>Author: <span className="text-ink type-body-strong">{theme.author || "Unknown"}</span></span>
                 </div>
                 <div className="flex items-center gap-2 text-stone">
                   <FiFileText size={15} />
-                  <span>License: <strong className="text-ink font-medium">{theme.license || "Unknown"}</strong></span>
+                  <span>License: <span className="text-ink type-body-strong">{theme.license || "Unknown"}</span></span>
                 </div>
                 {theme.homepage && (
                   <div className="flex items-center gap-2 text-stone sm:col-span-2">
                     <FiExternalLink size={15} />
-                    <span>Homepage: <a href={theme.homepage} target="_blank" rel="noopener noreferrer" className="btn-text-link text-ink hover:underline font-medium">{theme.homepage}</a></span>
+                    <span>
+                      Homepage:{" "}
+                      <a href={theme.homepage} target="_blank" rel="noopener noreferrer" className="btn-text-link text-ink">
+                        {theme.homepage}
+                      </a>
+                    </span>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Component Checklists */}
           <div className="card-flat">
-            <div className="border-b border-hairline-soft pb-3 mb-4">
-              <span className="type-micro-caps text-stone font-semibold">Visual Components Included</span>
-            </div>
+            <CardSectionHeader title="Visual Components Included" />
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 -mt-2">
               {Object.entries(theme.components).map(([key, present]) => (
                 <div 
                   key={key} 
-                  className={`flex items-center justify-between p-3 border text-xs transition-colors duration-150 ${
+                  className={`flex items-center justify-between p-3 border transition-colors duration-150 ${
                     present 
                       ? "bg-canvas border-hairline-soft text-ink" 
                       : "bg-canvas-warm border-hairline-soft/40 text-stone"
                   }`}
                 >
-                  <span className="capitalize font-medium">{key.replace('_', ' ')}</span>
+                  <span className="capitalize type-body-strong">{key.replace('_', ' ')}</span>
                   {present ? (
-                    <span className="monochrome-badge monochrome-badge-active text-[10px]">Active</span>
+                    <span className="monochrome-badge monochrome-badge-active">Active</span>
                   ) : (
-                    <span className="type-micro-caps text-stone opacity-50 text-[10px]">None</span>
+                    <span className="type-micro-caps text-stone opacity-50">None</span>
                   )}
                 </div>
               ))}
@@ -160,15 +155,12 @@ export const ThemeDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* System Dependencies checklist */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="card-flat">
-            <div className="border-b border-hairline-soft pb-3 mb-4">
-              <span className="type-micro-caps text-stone font-semibold">Dependencies Check</span>
-            </div>
+            <CardSectionHeader title="Dependencies Check" />
             
             {theme.dependencies && theme.dependencies.items.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-4 -mt-2">
                 <p className="type-meta text-stone">
                   Verify required system libraries, helper utilities, and font files:
                 </p>
@@ -176,22 +168,22 @@ export const ThemeDetails: React.FC = () => {
                   {theme.dependencies.items.map((dep) => (
                     <div 
                       key={dep.name} 
-                      className={`flex items-center justify-between p-3 border text-xs ${
+                      className={`flex items-center justify-between p-3 border ${
                         dep.installed 
                           ? "bg-canvas border-hairline-soft text-ink" 
                           : "bg-canvas-warm border-hairline-soft/40 text-stone"
                       }`}
                     >
                       <div className="flex flex-col">
-                        <span className="font-semibold text-ink">{dep.name}</span>
-                        <span className="type-micro-caps text-stone text-[10px] mt-0.5 tracking-wider">{dep.kind}</span>
+                        <span className="type-body-strong text-ink">{dep.name}</span>
+                        <span className="type-micro-caps text-stone mt-0.5">{dep.kind}</span>
                       </div>
                       {dep.installed ? (
-                        <span className="text-ink flex items-center gap-0.5 font-semibold text-[11px]">
+                        <span className="type-meta text-ink flex items-center gap-1">
                           <FiCheck size={14} /> Met
                         </span>
                       ) : (
-                        <span className="text-stone flex items-center gap-0.5 font-semibold text-[11px]">
+                        <span className="type-meta text-stone flex items-center gap-1">
                           <FiX size={14} /> Missing
                         </span>
                       )}
@@ -200,7 +192,7 @@ export const ThemeDetails: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="type-body text-stone italic py-6 text-center">
+              <div className="type-body text-stone italic py-6 text-center -mt-2">
                 No dependencies specified for this theme.
               </div>
             )}

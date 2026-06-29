@@ -9,15 +9,19 @@ interface PageHeaderProps {
 
 export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, eyebrow, actions }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-end md:justify-between border-b border-hairline pb-6 mb-8 gap-4">
-      <div className="space-y-1">
+    <header className="flex flex-col gap-4 border-b border-hairline pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <div className="space-y-2 min-w-0">
         {eyebrow && (
-          <div className="type-eyebrow text-stone tracking-[0.35px] mb-2">{eyebrow}</div>
+          <p className="type-eyebrow text-stone">{eyebrow}</p>
         )}
-        <h1 className="type-heading-md text-ink tracking-[-0.9px]">{title}</h1>
-        {subtitle && <p className="type-body text-graphite mt-1.5 max-w-2xl">{subtitle}</p>}
+        <h1 className="type-heading-md text-ink">{title}</h1>
+        {subtitle && <p className="type-body text-graphite max-w-2xl">{subtitle}</p>}
       </div>
-      {actions && <div className="flex gap-2 shrink-0">{actions}</div>}
-    </div>
+      {actions && (
+        <div className="flex flex-wrap items-center gap-2 shrink-0 sm:justify-end">
+          {actions}
+        </div>
+      )}
+    </header>
   );
 };

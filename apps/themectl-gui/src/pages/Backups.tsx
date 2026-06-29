@@ -1,6 +1,7 @@
 import React from "react";
 import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
+import { Button } from "../components/ui/Button";
 import { useBackups, useRestoreBackup, useDeleteBackup } from "../hooks/useBackups";
 import { 
   FiClock, 
@@ -38,7 +39,7 @@ export const Backups: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="page-container">
       <PageHeader 
         eyebrow="Configuration Rollback"
         title="Backups" 
@@ -54,7 +55,7 @@ export const Backups: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4">
           {backups?.map((snap) => (
             <div 
               key={snap.timestamp} 
@@ -62,8 +63,8 @@ export const Backups: React.FC = () => {
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div className="space-y-2 flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="type-heading-sm text-ink flex items-center gap-2 font-medium">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="type-heading-sm text-ink flex items-center gap-2">
                       <FiClock className="text-stone shrink-0" size={16} />
                       {snap.timestamp}
                     </h3>
@@ -80,48 +81,49 @@ export const Backups: React.FC = () => {
                     {snap.theme_applied && (
                       <span className="flex items-center gap-1.5">
                         <FiLayers size={13} className="text-stone" />
-                        Theme: <strong className="text-ink font-medium">{snap.theme_applied}</strong>
+                        Theme: <span className="text-ink type-body-strong">{snap.theme_applied}</span>
                       </span>
                     )}
                     <span className="flex items-center gap-1.5 truncate max-w-xs">
                       <FiSliders size={13} className="text-stone" />
-                      Plasma Style: <span className="text-ink font-medium truncate">{snap.plasma_style || "None"}</span>
+                      Plasma Style: <span className="text-ink type-body-strong truncate">{snap.plasma_style || "None"}</span>
                     </span>
                     <span className="flex items-center gap-1.5 truncate max-w-xs">
                       <FiSliders size={13} className="text-stone" />
-                      Color: <span className="text-ink font-medium truncate">{snap.color_scheme || "None"}</span>
+                      Color: <span className="text-ink type-body-strong truncate">{snap.color_scheme || "None"}</span>
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                  <button 
+                  <Button 
+                    variant="icon-danger"
                     onClick={() => handleDelete(snap.timestamp)}
                     disabled={restoreMutation.isPending || deleteMutation.isPending}
-                    className="btn-ghost w-10 h-10 p-0 flex items-center justify-center rounded-full hover:border-red-500 hover:text-red-500"
                     title="Permanently Delete Snapshot"
+                    aria-label="Delete snapshot"
                   >
                     {deleteMutation.isPending && deleteMutation.variables === snap.timestamp ? (
                       <Spinner size="sm" className="text-ink" />
                     ) : (
                       <FiTrash2 size={16} />
                     )}
-                  </button>
+                  </Button>
 
-                  <button
-                    className="btn-ghost"
+                  <Button
+                    variant="ghost"
                     onClick={() => handleRestore(snap.timestamp)}
                     disabled={restoreMutation.isPending}
                   >
                     {restoreMutation.isPending && restoreMutation.variables === snap.timestamp ? (
                       <Spinner size="sm" className="text-ink" />
                     ) : (
-                      <div className="flex items-center gap-1.5">
+                      <>
                         <FiCornerUpLeft size={14} />
                         <span>Restore Point</span>
-                      </div>
+                      </>
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

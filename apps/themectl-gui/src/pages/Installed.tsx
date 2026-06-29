@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
+import { Button, ButtonLink } from "../components/ui/Button";
 import { useInstalledThemes, useRemoveTheme } from "../hooks/useThemes";
 import { PreviewModal } from "../components/themes/PreviewModal";
 import { 
@@ -83,7 +84,7 @@ export const Installed: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="page-container">
       <PageHeader 
         eyebrow="Local storage"
         title="Installed Themes" 
@@ -95,23 +96,21 @@ export const Installed: React.FC = () => {
           <FiAlertTriangle size={32} className="text-stone mb-4" />
           <p className="type-body-strong text-ink">No themes installed yet</p>
           <p className="type-meta text-stone mt-1 mb-5">You can download new themes from the store.</p>
-          <Link to="/themes">
-            <button className="btn-primary">
-              Go to Theme Store
-            </button>
-          </Link>
+          <ButtonLink to="/themes" variant="primary">
+            Go to Theme Store
+          </ButtonLink>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4">
           {themes?.map((theme) => (
             <div 
               key={theme.name} 
               className={theme.is_applied ? "card-featured" : "card-flat"}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div className="space-y-2">
+                <div className="space-y-2 min-w-0">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="type-heading-sm text-ink font-medium">{theme.display_name || theme.name}</h3>
+                    <h3 className="type-heading-sm text-ink">{theme.display_name || theme.name}</h3>
                     {theme.is_applied && (
                       <span className="monochrome-badge monochrome-badge-active gap-1">
                         <FiCheckCircle size={13} />
@@ -135,46 +134,46 @@ export const Installed: React.FC = () => {
 
                 <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                   <Link to={`/installed/${theme.name}`} title="Theme Details">
-                    <button className="btn-ghost w-10 h-10 p-0 flex items-center justify-center rounded-full">
+                    <Button variant="icon" aria-label="Theme details">
                       <FiInfo size={16} />
-                    </button>
+                    </Button>
                   </Link>
 
-                  <button 
-                    className="btn-ghost w-10 h-10 p-0 flex items-center justify-center rounded-full"
+                  <Button 
+                    variant="icon"
                     title="Export Theme package"
                     onClick={() => handleExport(theme.name)}
                     disabled={exporting === theme.name}
+                    aria-label="Export theme"
                   >
                     {exporting === theme.name ? (
                       <Spinner size="sm" className="text-ink" />
                     ) : (
                       <FiDownloadCloud size={16} />
                     )}
-                  </button>
+                  </Button>
 
-                  <button 
-                    className="btn-ghost w-10 h-10 p-0 flex items-center justify-center rounded-full hover:border-red-500 hover:text-red-500"
+                  <Button 
+                    variant="icon-danger"
                     title="Uninstall Theme"
                     onClick={() => handleRemove(theme.name)}
                     disabled={removeMutation.isPending && removeMutation.variables?.name === theme.name}
+                    aria-label="Uninstall theme"
                   >
                     {removeMutation.isPending && removeMutation.variables?.name === theme.name ? (
                       <Spinner size="sm" className="text-ink" />
                     ) : (
                       <FiTrash2 size={16} />
                     )}
-                  </button>
+                  </Button>
 
-                  <button
-                    className="btn-primary"
+                  <Button
+                    variant="primary"
                     onClick={() => handleApplyClick(theme.name)}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <FiPlay size={14} />
-                      <span>Apply Theme</span>
-                    </div>
-                  </button>
+                    <FiPlay size={14} />
+                    <span>Apply Theme</span>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -182,7 +181,6 @@ export const Installed: React.FC = () => {
         </div>
       )}
 
-      {/* Preview and Apply Modal */}
       <PreviewModal 
         isOpen={!!selectedThemeForPreview} 
         onClose={() => setSelectedThemeForPreview(null)} 

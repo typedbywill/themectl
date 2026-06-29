@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
+import { Button } from "../components/ui/Button";
 import { useAvailableThemes, useInstallTheme } from "../hooks/useThemes";
 import { 
   FiSearch, 
@@ -30,14 +31,12 @@ export const Themes: React.FC = () => {
     installMutation.mutate({ source: themeName, force: true });
   };
 
-  const getSignatureBadge = () => {
-    return (
-      <span className="monochrome-badge monochrome-badge-secondary gap-1">
-        <FiShield size={12} />
-        <span>Verified</span>
-      </span>
-    );
-  };
+  const getSignatureBadge = () => (
+    <span className="monochrome-badge monochrome-badge-secondary gap-1">
+      <FiShield size={12} />
+      <span>Verified</span>
+    </span>
+  );
 
   if (isLoading) {
     return (
@@ -49,22 +48,18 @@ export const Themes: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="page-container">
       <PageHeader 
         eyebrow="Theme store"
         title="Discover Themes" 
         subtitle="Discover and download new visual configurations from your active repositories." 
         actions={
-          <button 
-            onClick={() => refetch()}
-            className="btn-ghost"
-          >
+          <Button variant="ghost" onClick={() => refetch()}>
             Refresh Catalog
-          </button>
+          </Button>
         }
       />
 
-      {/* Search and Filters */}
       <div className="w-full max-w-md relative flex items-center">
         <FiSearch className="text-stone absolute left-0 pointer-events-none" size={18} />
         <input
@@ -83,11 +78,10 @@ export const Themes: React.FC = () => {
           <p className="type-meta text-stone mt-1">Try refining your search terms or verify your repositories.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredThemes.map((theme) => (
-            <div key={theme.name} className="card-flat group hover:border-stone transition-colors duration-150 justify-between min-h-[420px]">
+            <div key={theme.name} className="card-flat group hover:border-stone transition-colors duration-150 justify-between">
               <div>
-                {/* Image Placeholder */}
                 <div className="media-thumbnail-placeholder bg-surface-cool border-b border-hairline-soft mb-5">
                   {theme.screenshots?.[0] ? (
                     <div 
@@ -95,7 +89,7 @@ export const Themes: React.FC = () => {
                       style={{ backgroundImage: `url(${theme.screenshots[0]})` }} 
                     />
                   ) : (
-                    <span className="type-micro-caps text-stone opacity-60 tracking-wider font-semibold select-none">
+                    <span className="type-micro-caps text-stone opacity-60 tracking-wider select-none">
                       {theme.display_name || theme.name}
                     </span>
                   )}
@@ -113,38 +107,39 @@ export const Themes: React.FC = () => {
                   </h4>
                   <p className="type-meta text-stone">by {theme.author || "Unknown"}</p>
                   
-                  <p className="type-body text-graphite line-clamp-3 leading-relaxed pt-2">
+                  <p className="type-body text-graphite line-clamp-3 pt-2">
                     {theme.description || "No description provided."}
                   </p>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-hairline-soft mt-6 flex items-center justify-between">
-                <div className="flex items-center gap-1.5 type-meta text-stone">
-                  <FiGlobe size={13} />
-                  <span>{theme.source_name}</span>
+              <div className="pt-5 border-t border-hairline-soft mt-5 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5 type-meta text-stone min-w-0">
+                  <FiGlobe size={13} className="shrink-0" />
+                  <span className="truncate">{theme.source_name}</span>
                 </div>
 
                 {theme.is_installed ? (
-                  <span className="monochrome-badge monochrome-badge-active gap-1">
+                  <span className="monochrome-badge monochrome-badge-active gap-1 shrink-0">
                     <FiCheck size={13} />
                     <span>Installed</span>
                   </span>
                 ) : (
-                  <button
-                    className="btn-primary"
+                  <Button
+                    variant="primary"
                     onClick={() => handleInstall(theme.name)}
                     disabled={installMutation.isPending && installMutation.variables?.source === theme.name}
+                    className="shrink-0"
                   >
                     {installMutation.isPending && installMutation.variables?.source === theme.name ? (
                       <Spinner size="sm" className="text-on-primary" />
                     ) : (
-                      <div className="flex items-center gap-1.5">
+                      <>
                         <FiDownload size={14} />
                         <span>Install</span>
-                      </div>
+                      </>
                     )}
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>

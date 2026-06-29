@@ -108,17 +108,25 @@ export const AppShell: React.FC = () => {
             </Link>
 
             <button
+              type="button"
               onClick={toggleSidebar}
-              className="flex items-center gap-3 px-3 py-2 text-stone hover:text-ink rounded-lg text-sm font-medium transition-all duration-150 w-full"
+              className="flex items-center gap-3 px-3 py-2.5 type-link-sm text-stone hover:bg-hairline-soft hover:text-ink transition-all duration-150 w-full"
             >
-              {sidebarCollapsed ? <FiChevronRight size={18} /> : <div className="flex items-center gap-3"><FiChevronLeft size={18} /> <span>Collapse Sidebar</span></div>}
+              {sidebarCollapsed ? (
+                <FiChevronRight size={18} className="shrink-0" />
+              ) : (
+                <>
+                  <FiChevronLeft size={18} className="shrink-0" />
+                  <span>Collapse Sidebar</span>
+                </>
+              )}
             </button>
           </div>
         </aside>
 
         {/* Content area */}
         <main className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="flex-1 overflow-y-auto p-6 scrollbar-gutter-stable">
+          <div className="flex-1 overflow-y-auto px-8 py-8 scrollbar-gutter-stable">
             <Outlet />
           </div>
         </main>

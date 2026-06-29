@@ -8,6 +8,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../services/api";
 import { useApplyTheme } from "../../hooks/useThemes";
+import { Button } from "../ui/Button";
 import { FiCheckCircle, FiAlertTriangle, FiSliders } from "react-icons/fi";
 
 interface PreviewModalProps {
@@ -54,7 +55,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ isOpen, onClose, the
           <Modal.CloseTrigger onPress={onClose} className="text-stone hover:text-ink" />
           
           <Modal.Header>
-            <Modal.Heading className="type-heading-sm text-ink font-semibold">Apply Theme: {themeName}</Modal.Heading>
+            <Modal.Heading className="type-heading-sm text-ink">Apply Theme: {themeName}</Modal.Heading>
           </Modal.Header>
           
           <Modal.Body className="py-6 space-y-5">
@@ -148,11 +149,11 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ isOpen, onClose, the
           </Modal.Body>
 
           <Modal.Footer className="border-t border-hairline-soft pt-4 flex justify-end gap-2">
-            <button className="btn-ghost" onClick={onClose}>
+            <Button variant="ghost" onClick={onClose}>
               Cancel
-            </button>
-            <button 
-              className="btn-primary" 
+            </Button>
+            <Button 
+              variant="primary" 
               onClick={handleApply}
               disabled={isLoading || !previewData || selectedComponents.length === 0 || applyMutation.isPending}
             >
@@ -161,7 +162,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ isOpen, onClose, the
               ) : (
                 <span>Apply Theme</span>
               )}
-            </button>
+            </Button>
           </Modal.Footer>
         </Modal.Dialog>
       </Modal.Container>

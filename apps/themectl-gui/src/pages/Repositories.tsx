@@ -4,6 +4,7 @@ import {
   Modal
 } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
+import { Button } from "../components/ui/Button";
 import { useSources, useAddSource, useRemoveSource, useRefreshSources } from "../hooks/useSources";
 import { 
   FiTrash2, 
@@ -58,43 +59,36 @@ export const Repositories: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="page-container">
       <PageHeader 
         eyebrow="Configured Sources"
         title="Repositories" 
         subtitle="Manage remote repository links containing pre-packaged theme indexes." 
         actions={
-          <div className="flex gap-2">
-            <button
+          <>
+            <Button
+              variant="ghost"
               onClick={handleRefreshAll}
               disabled={refreshMutation.isPending}
-              className="btn-ghost"
             >
-              <div className="flex items-center gap-1.5">
-                <FiRefreshCw className={refreshMutation.isPending ? "animate-spin" : ""} />
-                <span>Refresh Indexes</span>
-              </div>
-            </button>
-            <button
-              className="btn-primary"
-              onClick={() => setIsOpen(true)}
-            >
-              <div className="flex items-center gap-1.5">
-                <FiPlus />
-                <span>Add Repository</span>
-              </div>
-            </button>
-          </div>
+              <FiRefreshCw className={refreshMutation.isPending ? "animate-spin" : ""} />
+              <span>Refresh Indexes</span>
+            </Button>
+            <Button variant="primary" onClick={() => setIsOpen(true)}>
+              <FiPlus />
+              <span>Add Repository</span>
+            </Button>
+          </>
         }
       />
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-4">
         {sources?.map((src) => (
           <div key={src.name} className="card-flat">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="space-y-2 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="type-heading-sm text-ink font-medium capitalize">{src.name}</h3>
+                  <h3 className="type-heading-sm text-ink capitalize">{src.name}</h3>
                   {src.name === "official" && (
                     <span className="monochrome-badge monochrome-badge-active">Official</span>
                   )}
@@ -112,36 +106,37 @@ export const Repositories: React.FC = () => {
                   </span>
                   <span className="flex items-center gap-1.5">
                     <FiArchive size={13} />
-                    Themes: <strong className="text-ink font-semibold">{src.theme_count}</strong>
+                    Themes: <span className="text-ink type-body-strong">{src.theme_count}</span>
                   </span>
                 </div>
               </div>
 
               {src.name !== "official" && (
-                <button
+                <Button
+                  variant="icon-danger"
                   onClick={() => handleRemove(src.name)}
                   disabled={removeMutation.isPending && removeMutation.variables === src.name}
-                  className="btn-ghost w-10 h-10 p-0 flex items-center justify-center rounded-full hover:border-red-500 hover:text-red-500 shrink-0 self-end sm:self-center"
+                  className="self-end sm:self-center"
+                  aria-label="Remove repository"
                 >
                   {removeMutation.isPending && removeMutation.variables === src.name ? (
                     <Spinner size="sm" className="text-ink" />
                   ) : (
                     <FiTrash2 size={16} />
                   )}
-                </button>
+                </Button>
               )}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Add Source Modal */}
       <Modal.Backdrop isOpen={isOpen} onOpenChange={setIsOpen} className="light">
         <Modal.Container>
           <Modal.Dialog className="sm:max-w-[450px] bg-canvas border border-hairline text-ink">
             <Modal.CloseTrigger onPress={() => setIsOpen(false)} className="text-stone hover:text-ink" />
             <Modal.Header>
-              <Modal.Heading className="type-heading-sm text-ink font-medium">Add Repository Source</Modal.Heading>
+              <Modal.Heading className="type-heading-sm text-ink">Add Repository Source</Modal.Heading>
             </Modal.Header>
             <Modal.Body className="py-6 space-y-5">
               <p className="type-meta text-stone">
@@ -149,7 +144,7 @@ export const Repositories: React.FC = () => {
               </p>
               <div className="space-y-5">
                 <div className="form-field-group">
-                  <span className="type-meta text-stone font-medium">Repository URL</span>
+                  <span className="type-meta text-stone">Repository URL</span>
                   <input
                     type="text"
                     placeholder="https://example.com/themes/index.json"
@@ -160,7 +155,7 @@ export const Repositories: React.FC = () => {
                   />
                 </div>
                 <div className="form-field-group">
-                  <span className="type-meta text-stone font-medium">Identifier (Optional)</span>
+                  <span className="type-meta text-stone">Identifier (Optional)</span>
                   <input
                     type="text"
                     placeholder="my-custom-repo"
@@ -172,11 +167,11 @@ export const Repositories: React.FC = () => {
               </div>
             </Modal.Body>
             <Modal.Footer className="border-t border-hairline-soft pt-4 flex justify-end gap-2">
-              <button className="btn-ghost" onClick={() => setIsOpen(false)}>
+              <Button variant="ghost" onClick={() => setIsOpen(false)}>
                 Cancel
-              </button>
-              <button 
-                className="btn-primary"
+              </Button>
+              <Button 
+                variant="primary"
                 onClick={handleAdd}
                 disabled={addMutation.isPending || !newUrl}
               >
@@ -185,7 +180,7 @@ export const Repositories: React.FC = () => {
                 ) : (
                   <span>Add Repository</span>
                 )}
-              </button>
+              </Button>
             </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>

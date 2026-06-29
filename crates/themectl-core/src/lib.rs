@@ -623,7 +623,7 @@ pub fn export(output: Option<&str>, dry_run: bool) -> Result<()> {
     let final_output_path = Path::new(final_output);
 
     if !dry_run {
-        package::pack_theme(temp_export_dir.parent().unwrap(), final_output_path)?;
+        package::pack_theme(&temp_export_dir, final_output_path)?;
         let _ = fs::remove_dir_all(temp_export_dir);
         println!("✓ Exported theme to {}", final_output);
     } else {

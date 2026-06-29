@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Spinner, Switch } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
+import { CardSectionHeader } from "../components/ui/CardSectionHeader";
+import { Button } from "../components/ui/Button";
 import { useSettings, useSaveSettings } from "../hooks/useSettings";
 import { GuiSettings } from "../types";
 import { FiSave, FiSliders, FiFolder } from "react-icons/fi";
@@ -39,42 +41,36 @@ export const Settings: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="page-container page-container-narrow">
       <PageHeader 
         eyebrow="Preferences"
         title="Settings" 
         subtitle="Manage CLI directories, maximum backup limits, and package signature security policies." 
         actions={
-          <button
-            className="btn-primary"
+          <Button
+            variant="primary"
             onClick={handleSave}
             disabled={saveMutation.isPending}
           >
             {saveMutation.isPending ? (
               <Spinner size="sm" className="text-on-primary" />
             ) : (
-              <div className="flex items-center gap-1.5">
+              <>
                 <FiSave />
                 <span>Save Settings</span>
-              </div>
+              </>
             )}
-          </button>
+          </Button>
         }
       />
 
-      <div className="grid grid-cols-1 gap-6">
-        {/* Directories Card */}
+      <div className="grid grid-cols-1 gap-4">
         <div className="card-flat">
-          <div className="border-b border-hairline-soft pb-3 mb-4">
-            <span className="type-micro-caps text-stone font-semibold flex items-center gap-1.5">
-              <FiFolder size={15} />
-              <span>CLI Storage Directories</span>
-            </span>
-          </div>
+          <CardSectionHeader title="CLI Storage Directories" icon={<FiFolder size={15} />} />
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 -mt-2">
             <div className="form-field-group">
-              <span className="type-meta text-stone font-medium">Theme Directory</span>
+              <span className="type-meta text-stone">Theme Directory</span>
               <input
                 type="text"
                 value={form.theme_directory}
@@ -84,7 +80,7 @@ export const Settings: React.FC = () => {
               <span className="type-meta text-stone mt-1">Local package folder: ~/.local/share/themectl/themes/</span>
             </div>
             <div className="form-field-group">
-              <span className="type-meta text-stone font-medium">Backup Directory</span>
+              <span className="type-meta text-stone">Backup Directory</span>
               <input
                 type="text"
                 value={form.backup_directory}
@@ -96,17 +92,10 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* Configurations Card */}
         <div className="card-flat">
-          <div className="border-b border-hairline-soft pb-3 mb-4">
-            <span className="type-micro-caps text-stone font-semibold flex items-center gap-1.5">
-              <FiSliders size={15} />
-              <span>General Preferences</span>
-            </span>
-          </div>
+          <CardSectionHeader title="General Preferences" icon={<FiSliders size={15} />} />
 
-          <div className="space-y-6">
-            {/* Max Backups */}
+          <div className="space-y-6 -mt-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3 border-b border-hairline-soft">
               <div className="space-y-0.5">
                 <span className="type-body-strong text-ink block">Maximum Backups</span>
@@ -122,7 +111,6 @@ export const Settings: React.FC = () => {
               </div>
             </div>
 
-            {/* Switches list */}
             <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between py-2">
                 <div className="space-y-0.5">
@@ -178,13 +166,10 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* Security policy card */}
         <div className="card-flat">
-          <div className="border-b border-hairline-soft pb-3 mb-4">
-            <span className="type-micro-caps text-stone font-semibold">🔒 Cryptographic Security Policies</span>
-          </div>
+          <CardSectionHeader title="Cryptographic Security Policies" />
 
-          <div className="space-y-6">
+          <div className="space-y-6 -mt-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3">
               <div className="space-y-0.5 max-w-md">
                 <span className="type-body-strong text-ink block">Signature Policy</span>

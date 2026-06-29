@@ -115,6 +115,56 @@
   text-decoration: underline;
 }
 
+a.btn-primary,
+a.btn-ghost,
+a.btn-text-link {
+  text-decoration: none;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  padding: 0;
+}
+
+.btn-icon-danger:hover:not(:disabled) {
+  border-color: #ef4444;
+  color: #ef4444;
+  background-color: var(--color-canvas);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Typography — scoped stat & section labels */
+.stat-value {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.4px;
+}
+
+.card-section-header {
+  border-bottom: 1px solid var(--color-hairline-soft);
+  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.page-container {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.page-container-narrow {
+  max-width: 56rem;
+}
+
 /* Cards & Containers */
 .card-flat {
   background-color: var(--color-canvas);

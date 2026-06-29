@@ -1,0 +1,24 @@
+id: org.catppuccin.kde.mocha
+name: catppuccin-mocha
+version: 1.0.0
+display_name: Catppuccin Mocha
+description: Tema pastel Catppuccin Mocha para KDE Plasma 6. Esquema de cores oficial (acento Mauve) e wallpaper em gradiente.
+author: Catppuccin
+homepage: https://github.com/catppuccin/kde
+license: MIT
+supports:
+  - kde-plasma-6
+targets:
+  - kde-plasma
+compatibility:
+  plasma:
+    min: "6.0"
+    max: "6.x"
+dependencies:
+  icons:
+    - Papirus-Dark
+  packages:
+    - kvantum
+components:
+  color_scheme: ./colors/CatppuccinMochaMauve.colors
+  wallpaper: ./wallpapers/mocha-wallpaper.png

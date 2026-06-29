@@ -1,7 +1,8 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
+import { CardSectionHeader } from "../components/ui/CardSectionHeader";
+import { ButtonLink } from "../components/ui/Button";
 import { useInstalledThemes } from "../hooks/useThemes";
 import { useBackups } from "../hooks/useBackups";
 import { useSources } from "../hooks/useSources";
@@ -23,7 +24,7 @@ export const Dashboard: React.FC = () => {
   const { data: doctor, isLoading: loadingDoctor } = useDoctor();
 
   const currentThemeName = installedThemes?.find(t => t.is_applied);
-  const latestBackup = backups?.[0]; // backups are sorted newest first in our list_backups command
+  const latestBackup = backups?.[0];
 
   const isLoading = loadingInstalled || loadingBackups || loadingSources || loadingDoctor;
 
@@ -36,19 +37,17 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  // Calculate missing core tools
   const missingCoreTools = doctor?.tools.filter(t => !t.installed && t.category === "core") || [];
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="page-container">
       <PageHeader 
         eyebrow="System overview"
         title="Dashboard" 
         subtitle="Manage, browse and restore your KDE Plasma theme configuration." 
       />
 
-      {/* Stats Bar */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="card-flat">
           <div className="flex flex-row items-center gap-4">
             <div className="w-10 h-10 flex items-center justify-center border border-hairline-soft rounded-full text-ink shrink-0">
@@ -56,7 +55,7 @@ export const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="type-micro-caps text-stone">Installed Themes</p>
-              <h3 className="type-display-sm text-ink mt-0.5">{installedThemes?.length || 0}</h3>
+              <p className="stat-value text-ink mt-1">{installedThemes?.length || 0}</p>
             </div>
           </div>
         </div>
@@ -68,7 +67,7 @@ export const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="type-micro-caps text-stone">Repositories</p>
-              <h3 className="type-display-sm text-ink mt-0.5">{sources?.length || 0}</h3>
+              <p className="stat-value text-ink mt-1">{sources?.length || 0}</p>
             </div>
           </div>
         </div>
@@ -80,7 +79,7 @@ export const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="type-micro-caps text-stone">Backups</p>
-              <h3 className="type-display-sm text-ink mt-0.5">{backups?.length || 0}</h3>
+              <p className="stat-value text-ink mt-1">{backups?.length || 0}</p>
             </div>
           </div>
         </div>
@@ -92,43 +91,38 @@ export const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="type-micro-caps text-stone">System Status</p>
-              <h3 className="type-heading-sm text-ink mt-0.5">
+              <p className="type-heading-sm text-ink mt-1">
                 {missingCoreTools.length > 0 ? `${missingCoreTools.length} Issues` : "Healthy"}
-              </h3>
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Current Theme Card */}
-        <div className="card-flat justify-between min-h-[300px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="card-flat justify-between min-h-[280px]">
           <div className="space-y-4">
-            <div className="border-b border-hairline-soft pb-3 mb-3">
-              <p className="type-micro-caps text-stone">Current Theme</p>
-              <h3 className="type-heading-sm text-ink mt-0.5 font-medium">
-                {currentThemeName ? (currentThemeName.display_name || currentThemeName.name) : "No theme applied"}
-              </h3>
-            </div>
+            <CardSectionHeader title="Current Theme" />
             
             {currentThemeName ? (
               <div className="space-y-4">
-                <div className="type-body text-graphite">
+                <h3 className="type-heading-sm text-ink -mt-2">
+                  {currentThemeName.display_name || currentThemeName.name}
+                </h3>
+                <p className="type-body text-graphite">
                   {currentThemeName.description || "No description provided for this theme."}
-                </div>
+                </p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="border border-hairline-soft p-3 bg-canvas-warm">
                     <span className="type-micro-caps text-stone block">Version</span>
-                    <span className="type-body-strong text-ink mt-0.5 block">{currentThemeName.version}</span>
+                    <span className="type-body-strong text-ink mt-1 block">{currentThemeName.version}</span>
                   </div>
                   <div className="border border-hairline-soft p-3 bg-canvas-warm">
                     <span className="type-micro-caps text-stone block">Author</span>
-                    <span className="type-body-strong text-ink mt-0.5 block truncate">{currentThemeName.author || "Unknown"}</span>
+                    <span className="type-body-strong text-ink mt-1 block truncate">{currentThemeName.author || "Unknown"}</span>
                   </div>
                 </div>
 
-                {/* Applied Components count */}
                 <div className="space-y-2">
                   <span className="type-micro-caps text-stone block">Applied Components</span>
                   <div className="flex flex-wrap gap-1.5">
@@ -143,53 +137,46 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="type-body text-stone italic my-8 flex flex-col items-center justify-center gap-3">
+              <div className="type-body text-stone italic my-8 flex flex-col items-center justify-center gap-4">
                 <span>The system is currently using its default styles.</span>
-                <Link to="/themes">
-                  <button className="btn-ghost">
-                    Browse Themes <FiArrowRight className="ml-1" />
-                  </button>
-                </Link>
+                <ButtonLink to="/themes" variant="ghost">
+                  Browse Themes <FiArrowRight size={14} />
+                </ButtonLink>
               </div>
             )}
           </div>
         </div>
 
-        {/* Latest Backup Card */}
-        <div className="card-flat justify-between min-h-[300px]">
+        <div className="card-flat justify-between min-h-[280px]">
           <div className="space-y-4 flex-1 flex flex-col justify-between">
             <div>
-              <div className="border-b border-hairline-soft pb-3 mb-3">
-                <p className="type-micro-caps text-stone">Latest Snapshot</p>
-                <h3 className="type-heading-sm text-ink mt-0.5 font-medium">
-                  {latestBackup ? latestBackup.timestamp : "No snapshots recorded"}
-                </h3>
-              </div>
+              <CardSectionHeader title="Latest Snapshot" />
               
               {latestBackup ? (
-                <div className="space-y-4">
+                <div className="space-y-4 -mt-2">
+                  <h3 className="type-heading-sm text-ink">{latestBackup.timestamp}</h3>
                   <div className="flex items-center gap-2 type-body text-graphite">
                     <FiClock size={16} className="text-stone shrink-0" />
                     <span>Created at: {new Date(latestBackup.created_at).toLocaleString()}</span>
                   </div>
                   {latestBackup.theme_applied && (
                     <div className="type-meta text-stone bg-canvas-warm border border-hairline-soft p-3">
-                      Theme at capture: <span className="text-ink font-semibold">{latestBackup.theme_applied}</span>
+                      Theme at capture: <span className="text-ink type-body-strong">{latestBackup.theme_applied}</span>
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <span className="type-micro-caps text-stone block">Plasma Style:</span>
-                      <span className="type-body-tight text-ink font-medium truncate block mt-0.5">{latestBackup.plasma_style || "None"}</span>
+                      <span className="type-micro-caps text-stone block">Plasma Style</span>
+                      <span className="type-body-tight text-ink truncate block mt-1">{latestBackup.plasma_style || "None"}</span>
                     </div>
                     <div>
-                      <span className="type-micro-caps text-stone block">Color Scheme:</span>
-                      <span className="type-body-tight text-ink font-medium truncate block mt-0.5">{latestBackup.color_scheme || "None"}</span>
+                      <span className="type-micro-caps text-stone block">Color Scheme</span>
+                      <span className="type-body-tight text-ink truncate block mt-1">{latestBackup.color_scheme || "None"}</span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="type-body text-stone italic my-8 flex flex-col items-center justify-center gap-2">
+                <div className="type-body text-stone italic my-8 flex flex-col items-center justify-center gap-2 -mt-2">
                   <span>No restore points are available.</span>
                   <span className="type-meta text-stone text-center max-w-xs">Backups are automatically created before applying new themes.</span>
                 </div>
@@ -197,36 +184,31 @@ export const Dashboard: React.FC = () => {
             </div>
             
             {latestBackup && (
-              <div className="flex justify-end pt-4">
-                <Link to="/backups">
-                  <button className="btn-ghost">
-                    Manage Backups <FiArrowRight className="ml-1" />
-                  </button>
-                </Link>
+              <div className="flex justify-end pt-4 border-t border-hairline-soft">
+                <ButtonLink to="/backups" variant="ghost">
+                  Manage Backups <FiArrowRight size={14} />
+                </ButtonLink>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Row 2: Environment and Doctor */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 card-flat justify-between">
           <div>
-            <div className="border-b border-hairline-soft pb-3 mb-4">
-              <p className="type-micro-caps text-stone">System Environment</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CardSectionHeader title="System Environment" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 -mt-2">
               <div className="border border-hairline-soft p-4 bg-canvas-warm">
                 <span className="type-micro-caps text-stone block">Desktop Environment</span>
-                <span className="type-heading-sm text-ink mt-1 block font-medium">{doctor?.desktop || "KDE Plasma"}</span>
+                <span className="type-heading-sm text-ink mt-2 block">{doctor?.desktop || "KDE Plasma"}</span>
                 {doctor?.plasma_version && (
                   <span className="type-meta text-stone mt-1 block">{doctor.plasma_version}</span>
                 )}
               </div>
               <div className="border border-hairline-soft p-4 bg-canvas-warm">
                 <span className="type-micro-caps text-stone block">Distribution</span>
-                <span className="type-heading-sm text-ink mt-1 block font-medium capitalize truncate">
+                <span className="type-heading-sm text-ink mt-2 block capitalize truncate">
                   {doctor?.distros?.join(", ") || "Linux"}
                 </span>
               </div>
@@ -236,28 +218,22 @@ export const Dashboard: React.FC = () => {
             <span className="type-meta text-stone">
               Inspect your desktop environment dependencies and CLI tool configuration.
             </span>
-            <Link to="/doctor">
-              <button className="btn-ghost shrink-0">
-                Run Diagnostics <FiArrowRight className="ml-1" />
-              </button>
-            </Link>
+            <ButtonLink to="/doctor" variant="ghost" className="shrink-0">
+              Run Diagnostics <FiArrowRight size={14} />
+            </ButtonLink>
           </div>
         </div>
 
         <div className="card-flat justify-between">
           <div>
-            <div className="border-b border-hairline-soft pb-3 mb-4">
-              <p className="type-micro-caps text-stone">Repository sources</p>
-            </div>
-            <p className="type-body text-graphite leading-relaxed mb-6">
+            <CardSectionHeader title="Repository Sources" />
+            <p className="type-body text-graphite leading-relaxed -mt-2">
               Add theme catalogs and repositories to search for themes directly from the cloud.
             </p>
           </div>
-          <Link to="/repositories" className="w-full">
-            <button className="btn-primary w-full">
-              Manage Sources
-            </button>
-          </Link>
+          <ButtonLink to="/repositories" variant="primary" className="btn-full">
+            Manage Sources
+          </ButtonLink>
         </div>
       </div>
     </div>

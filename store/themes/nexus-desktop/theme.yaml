@@ -1,0 +1,26 @@
+id: dev.themectl.nexus-desktop
+name: nexus-desktop
+version: 1.0.0
+display_name: Nexus Desktop
+description: Tema de exemplo exportado do desktop KDE Plasma atual. Inclui esquema de cores, wallpaper e referências aos temas do sistema instalados.
+author: nexus
+homepage: https://github.com/yourusername/themectl
+license: MIT
+supports:
+  - kde-plasma-6
+targets:
+  - kde-plasma
+compatibility:
+  plasma:
+    min: "6.0"
+    max: "6.x"
+dependencies:
+  icons:
+    - MacTahoe
+    - Bibata-Modern-Ice
+  packages:
+    - kvantum
+components:
+  plasma_style: ./plasma
+  color_scheme: ./colors/KvMojave.colors
+  wallpaper: ./wallpapers/lancer_wallpaper.png

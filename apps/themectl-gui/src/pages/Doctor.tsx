@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
+import { CardSectionHeader } from "../components/ui/CardSectionHeader";
+import { Button } from "../components/ui/Button";
 import { useDoctor } from "../hooks/useDoctor";
 import { 
   FiCheckCircle, 
@@ -42,37 +44,30 @@ export const Doctor: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="page-container">
       <PageHeader 
         eyebrow="System Diagnostics"
         title="System Doctor" 
         subtitle="Diagnose system tools status, KDE utility paths, and active theme dependencies." 
         actions={
-          <div className="flex gap-2">
-            <button
-              onClick={() => refetch()}
-              className="btn-ghost"
-            >
+          <>
+            <Button variant="ghost" onClick={() => refetch()}>
               Re-run Diagnostics
-            </button>
-            <button
-              className="btn-primary"
+            </Button>
+            <Button
+              variant="primary"
               onClick={handleCopyReport}
               disabled={copying}
             >
-              <div className="flex items-center gap-1.5">
-                <FiClipboard />
-                <span>Copy Report</span>
-              </div>
-            </button>
-          </div>
+              <FiClipboard />
+              <span>Copy Report</span>
+            </Button>
+          </>
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Core details & tool status */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* System metadata */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-4">
           <div className="card-flat">
             <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
               <div className="flex items-start gap-4">
@@ -80,8 +75,8 @@ export const Doctor: React.FC = () => {
                   <FiCpu size={22} />
                 </div>
                 <div>
-                  <span className="type-micro-caps text-stone font-semibold">System Profile</span>
-                  <h3 className="type-heading-sm text-ink mt-0.5 font-medium">{report?.desktop || "KDE Plasma"}</h3>
+                  <span className="type-micro-caps text-stone block">System Profile</span>
+                  <h3 className="type-heading-sm text-ink mt-1">{report?.desktop || "KDE Plasma"}</h3>
                   {report?.plasma_version && (
                     <p className="type-meta text-stone mt-1">{report.plasma_version}</p>
                   )}
@@ -91,24 +86,18 @@ export const Doctor: React.FC = () => {
               <hr className="md:hidden border-t border-hairline-soft w-full" />
 
               <div className="flex flex-col justify-center">
-                <span className="type-micro-caps text-stone font-semibold block">OS Distribution Details</span>
-                <span className="type-body text-ink mt-1 font-semibold capitalize block">
+                <span className="type-micro-caps text-stone block">OS Distribution Details</span>
+                <span className="type-body-strong text-ink mt-1 capitalize block">
                   {report?.distros.join(", ") || "Linux Platform"}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Tools status */}
           <div className="card-flat">
-            <div className="border-b border-hairline-soft pb-3 mb-4">
-              <span className="type-micro-caps text-stone font-semibold flex items-center gap-1.5">
-                <FiTool size={15} />
-                <span>Required Helper Utilities</span>
-              </span>
-            </div>
+            <CardSectionHeader title="Required Helper Utilities" icon={<FiTool size={15} />} />
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 -mt-2">
               {report?.tools.map((tool) => (
                 <div 
                   key={tool.name} 
@@ -118,14 +107,14 @@ export const Doctor: React.FC = () => {
                       : "bg-canvas-warm border-hairline-soft/40 text-stone"
                   }`}
                 >
-                  <span className="font-mono text-xs font-semibold">{tool.name}</span>
+                  <span className="font-mono type-meta">{tool.name}</span>
                   {tool.installed ? (
-                    <span className="text-ink text-xs font-bold flex items-center gap-0.5">
-                      <FiCheckCircle size={15} /> Installed
+                    <span className="type-meta text-ink flex items-center gap-1">
+                      <FiCheckCircle size={14} /> Installed
                     </span>
                   ) : (
-                    <span className="text-stone text-xs font-bold flex items-center gap-0.5">
-                      <FiXCircle size={15} /> Missing
+                    <span className="type-meta text-stone flex items-center gap-1">
+                      <FiXCircle size={14} /> Missing
                     </span>
                   )}
                 </div>
@@ -134,18 +123,12 @@ export const Doctor: React.FC = () => {
           </div>
         </div>
 
-        {/* Applied theme dependencies check */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="card-flat">
-            <div className="border-b border-hairline-soft pb-3 mb-4 flex flex-col gap-1">
-              <span className="type-micro-caps text-stone font-semibold flex items-center gap-1.5">
-                <FiLayers size={15} />
-                <span>Applied Theme Checks</span>
-              </span>
-              <span className="type-meta text-stone truncate max-w-full mt-1">
-                Theme: <strong className="text-ink font-semibold">{report?.applied_theme || "None"}</strong>
-              </span>
-            </div>
+            <CardSectionHeader title="Applied Theme Checks" icon={<FiLayers size={15} />} />
+            <p className="type-meta text-stone truncate -mt-2 mb-4">
+              Theme: <span className="text-ink type-body-strong">{report?.applied_theme || "None"}</span>
+            </p>
             
             <div className="space-y-2">
               {report?.applied_theme ? (
@@ -154,22 +137,22 @@ export const Doctor: React.FC = () => {
                     {report.dependency_status.map((dep) => (
                       <div 
                         key={dep.name} 
-                        className={`flex items-center justify-between p-3 border text-xs ${
+                        className={`flex items-center justify-between p-3 border ${
                           dep.installed 
                             ? "bg-canvas border-hairline-soft text-ink" 
                             : "bg-canvas-warm border-hairline-soft/40 text-stone"
                         }`}
                       >
                         <div className="flex flex-col">
-                          <span className="font-semibold text-ink">{dep.name}</span>
-                          <span className="type-micro-caps text-stone text-[10px] mt-0.5">{dep.kind}</span>
+                          <span className="type-body-strong text-ink">{dep.name}</span>
+                          <span className="type-micro-caps text-stone mt-0.5">{dep.kind}</span>
                         </div>
                         {dep.installed ? (
-                          <span className="text-ink flex items-center gap-0.5 font-semibold text-[11px]">
+                          <span className="type-meta text-ink flex items-center gap-1">
                             <FiCheck size={13} /> Met
                           </span>
                         ) : (
-                          <span className="text-stone flex items-center gap-0.5 font-semibold text-[11px]">
+                          <span className="type-meta text-stone flex items-center gap-1">
                             <FiX size={13} /> Missing
                           </span>
                         )}
