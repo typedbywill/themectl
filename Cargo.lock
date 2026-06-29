@@ -4200,7 +4200,9 @@ dependencies = [
  "tauri-plugin-opener",
  "themectl-backup",
  "themectl-core",
+ "themectl-kde",
  "themectl-repository",
+ "themectl-security",
  "themectl-spec",
  "themectl-utils",
 ]

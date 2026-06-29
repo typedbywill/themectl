@@ -31,4 +31,6 @@ themectl-spec = { path = "../../../crates/themectl-spec" }
 themectl-backup = { path = "../../../crates/themectl-backup" }
 themectl-repository = { path = "../../../crates/themectl-repository" }
 themectl-utils = { path = "../../../crates/themectl-utils" }
+themectl-kde = { path = "../../../crates/themectl-kde" }
+themectl-security = { path = "../../../crates/themectl-security" }
 

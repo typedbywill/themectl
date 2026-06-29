@@ -1,18 +1,17 @@
 use crate::dto::*;
 use themectl_repository::{
     registry::{load_registry, save_registry, get_themes_dir},
-    source::{load_sources, save_sources, get_source_cache_path, RepoIndex},
+    source::{load_sources, get_source_cache_path, RepoIndex},
 };
 use themectl_backup::{
     backup::get_backups_root,
     list_snapshots,
-    restore_snapshot,
     create_and_save_snapshot,
 };
 use themectl_spec::{ThemeManifest, DesktopEnvironment};
 use themectl_kde::{kde::{self, ApplyOptions}, detector};
 use themectl_utils::cmd::check_tool;
-use themectl_utils::compat::{get_current_distros, is_version_compatible};
+use themectl_utils::compat::get_current_distros;
 use std::fs;
 use std::path::{Path, PathBuf};
 use chrono::Utc;
@@ -320,7 +319,7 @@ pub async fn preview_theme(name: String) -> std::result::Result<PreviewDto, Stri
         let mut missing_deps = Vec::new();
 
         if let Some(ref comp) = manifest.components {
-            let add_change = |comp_name: &str, desc: &str, is_present: bool| {
+            let mut add_change = |comp_name: &str, desc: &str, is_present: bool| {
                 if is_present {
                     changes.push(PreviewChange {
                         component: comp_name.to_string(),
@@ -340,7 +339,7 @@ pub async fn preview_theme(name: String) -> std::result::Result<PreviewDto, Stri
         }
 
         if let Some(ref deps) = manifest.dependencies {
-            let check_dep = |dep_name: &str, kind: &str, check_fn: fn(&str) -> bool| {
+            let mut check_dep = |dep_name: &str, kind: &str, check_fn: fn(&str) -> bool| {
                 let installed = check_fn(dep_name);
                 if !installed {
                     missing_deps.push(DependencyItemDto {
