@@ -10,6 +10,7 @@ import { Repositories } from "./pages/Repositories";
 import { Backups } from "./pages/Backups";
 import { Doctor } from "./pages/Doctor";
 import { Settings } from "./pages/Settings";
+import { useThemeUIStore } from "./stores/themeStore";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,6 +22,7 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const { darkMode } = useThemeUIStore();
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -37,7 +39,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
-      <Toaster theme="dark" position="bottom-right" closeButton richColors />
+      <Toaster theme={darkMode ? "dark" : "light"} position="bottom-right" closeButton richColors />
     </QueryClientProvider>
   );
 }

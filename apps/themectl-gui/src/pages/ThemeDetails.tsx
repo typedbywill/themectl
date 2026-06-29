@@ -1,11 +1,6 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { 
-  Button, 
-  Spinner, 
-  Card, 
-  Chip
-} from "@heroui/react";
+import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
 import { useThemeDetails } from "../hooks/useThemes";
 import { 
@@ -29,20 +24,20 @@ export const ThemeDetails: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-2">
-        <Spinner size="lg" color="accent" />
-        <span className="text-sm text-gray-400">Loading theme details...</span>
+      <div className="flex flex-col items-center justify-center h-full gap-4">
+        <Spinner size="md" className="text-ink" />
+        <span className="type-meta text-stone">Loading theme details...</span>
       </div>
     );
   }
 
   if (error || !theme) {
     return (
-      <div className="space-y-4">
-        <Link to="/installed" className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white">
-          <FiArrowLeft /> Back to Installed Themes
+      <div className="space-y-4 max-w-7xl mx-auto">
+        <Link to="/installed" className="btn-text-link type-link-sm text-stone hover:text-ink">
+          <FiArrowLeft /> back to installed
         </Link>
-        <div className="text-red-400 text-sm py-4">
+        <div className="text-red-500 text-sm py-4">
           Failed to load theme details: {String(error || "Theme not found")}
         </div>
       </div>
@@ -52,191 +47,164 @@ export const ThemeDetails: React.FC = () => {
   const getSignatureBadge = (status: any) => {
     if (status === "Verified") {
       return (
-        <Chip 
-          size="sm" 
-          variant="soft" 
-          color="success" 
-          className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs"
-        >
-          <div className="flex items-center gap-1">
-            <FiShield size={12} />
-            <Chip.Label>Signature Verified</Chip.Label>
-          </div>
-        </Chip>
+        <span className="monochrome-badge monochrome-badge-outline gap-1 text-ink">
+          <FiShield size={12} className="text-stone" />
+          <span>Signature Verified</span>
+        </span>
       );
     } else if (status === "Unsigned") {
       return (
-        <Chip 
-          size="sm" 
-          variant="soft" 
-          color="warning" 
-          className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs"
-        >
-          <div className="flex items-center gap-1">
-            <FiAlertTriangle size={12} />
-            <Chip.Label>Unsigned Package</Chip.Label>
-          </div>
-        </Chip>
+        <span className="monochrome-badge monochrome-badge-outline gap-1 text-stone">
+          <FiAlertTriangle size={12} />
+          <span>Unsigned Package</span>
+        </span>
       );
     } else {
       return (
-        <Chip 
-          size="sm" 
-          variant="soft" 
-          color="danger" 
-          className="bg-red-500/10 text-red-400 border border-red-500/20 text-xs"
-        >
-          <div className="flex items-center gap-1">
-            <FiAlertTriangle size={12} />
-            <Chip.Label>Invalid Signature</Chip.Label>
-          </div>
-        </Chip>
+        <span className="monochrome-badge monochrome-badge-outline border-red-200 text-red-500 gap-1">
+          <FiAlertTriangle size={12} />
+          <span>Invalid Signature</span>
+        </span>
       );
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link to="/installed" className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors duration-150">
-          <FiArrowLeft /> Back to Installed Themes
+    <div className="space-y-8 max-w-7xl mx-auto">
+      <div>
+        <Link to="/installed" className="btn-text-link type-link-sm text-stone hover:text-ink">
+          <FiArrowLeft /> back to installed
         </Link>
       </div>
 
       <PageHeader 
+        eyebrow="Theme Details"
         title={theme.display_name || theme.name} 
         subtitle={`Installed version: ${theme.version}`}
         actions={
-          <Button
-            size="sm"
-            className="bg-[#7c3aed] hover:bg-[#9333ea] text-white font-medium"
-            onPress={() => openPreviewModal(theme.name)}
+          <button
+            className="btn-primary"
+            onClick={() => openPreviewModal(theme.name)}
           >
             <div className="flex items-center gap-1.5">
               <FiPlay size={14} />
               <span>Apply Theme</span>
             </div>
-          </Button>
+          </button>
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Info & Meta panel */}
         <div className="lg:col-span-2 space-y-6">
           {/* Metadata Card */}
-          <Card className="bg-[#111827] border border-[#1e293b]">
-            <Card.Content className="p-5 space-y-4">
+          <div className="card-flat">
+            <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 {getSignatureBadge(theme.signature_status)}
                 {theme.is_applied && (
-                  <Chip size="sm" color="accent" variant="soft" className="border border-[#7c3aed]/25">
-                    <Chip.Label className="text-[#a78bfa]">Currently Applied</Chip.Label>
-                  </Chip>
+                  <span className="monochrome-badge monochrome-badge-active">Currently Applied</span>
                 )}
               </div>
 
-              <div className="text-gray-300 text-sm leading-relaxed">
+              <div className="type-body text-graphite leading-relaxed">
                 {theme.description || "No description provided for this theme."}
               </div>
 
-              <hr className="border-t border-[#1e293b]" />
+              <hr className="border-t border-hairline-soft" />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div className="flex items-center gap-2 text-gray-400">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 type-meta">
+                <div className="flex items-center gap-2 text-stone">
                   <FiUser size={15} />
-                  <span>Author: <strong className="text-white font-medium">{theme.author || "Unknown"}</strong></span>
+                  <span>Author: <strong className="text-ink font-medium">{theme.author || "Unknown"}</strong></span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-400">
+                <div className="flex items-center gap-2 text-stone">
                   <FiFileText size={15} />
-                  <span>License: <strong className="text-white font-medium">{theme.license || "Unknown"}</strong></span>
+                  <span>License: <strong className="text-ink font-medium">{theme.license || "Unknown"}</strong></span>
                 </div>
                 {theme.homepage && (
-                  <div className="flex items-center gap-2 text-gray-400 sm:col-span-2">
+                  <div className="flex items-center gap-2 text-stone sm:col-span-2">
                     <FiExternalLink size={15} />
-                    <span>Homepage: <a href={theme.homepage} target="_blank" rel="noopener noreferrer" className="text-[#a78bfa] hover:underline font-medium">{theme.homepage}</a></span>
+                    <span>Homepage: <a href={theme.homepage} target="_blank" rel="noopener noreferrer" className="btn-text-link text-ink hover:underline font-medium">{theme.homepage}</a></span>
                   </div>
                 )}
               </div>
-            </Card.Content>
-          </Card>
+            </div>
+          </div>
 
           {/* Component Checklists */}
-          <Card className="bg-[#111827] border border-[#1e293b]">
-            <Card.Header className="border-b border-[#1e293b] px-5 py-4">
-              <Card.Title className="text-sm font-semibold text-white uppercase tracking-wider">Visual Components Included</Card.Title>
-            </Card.Header>
-            <Card.Content className="p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {Object.entries(theme.components).map(([key, present]) => (
-                  <div 
-                    key={key} 
-                    className={`flex items-center justify-between p-3 rounded-lg border text-xs ${
-                      present 
-                        ? "bg-[#1f2937]/20 border-[#374151]/50 text-gray-200" 
-                        : "bg-gray-900/10 border-gray-800/50 text-gray-500"
-                    }`}
-                  >
-                    <span className="capitalize font-medium">{key.replace('_', ' ')}</span>
-                    {present ? (
-                      <Chip size="sm" color="success" variant="soft" className="px-1 py-0 border border-emerald-500/25">
-                        <Chip.Label className="text-[10px]">Active</Chip.Label>
-                      </Chip>
-                    ) : (
-                      <span className="text-[10px] text-gray-600">None</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </Card.Content>
-          </Card>
+          <div className="card-flat">
+            <div className="border-b border-hairline-soft pb-3 mb-4">
+              <span className="type-micro-caps text-stone font-semibold">Visual Components Included</span>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {Object.entries(theme.components).map(([key, present]) => (
+                <div 
+                  key={key} 
+                  className={`flex items-center justify-between p-3 border text-xs transition-colors duration-150 ${
+                    present 
+                      ? "bg-canvas border-hairline-soft text-ink" 
+                      : "bg-canvas-warm border-hairline-soft/40 text-stone"
+                  }`}
+                >
+                  <span className="capitalize font-medium">{key.replace('_', ' ')}</span>
+                  {present ? (
+                    <span className="monochrome-badge monochrome-badge-active text-[10px]">Active</span>
+                  ) : (
+                    <span className="type-micro-caps text-stone opacity-50 text-[10px]">None</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* System Dependencies checklist */}
         <div className="space-y-6">
-          <Card className="bg-[#111827] border border-[#1e293b]">
-            <Card.Header className="border-b border-[#1e293b] px-5 py-4">
-              <Card.Title className="text-sm font-semibold text-white uppercase tracking-wider">Dependencies Check</Card.Title>
-            </Card.Header>
-            <Card.Content className="p-5 space-y-4">
-              {theme.dependencies && theme.dependencies.items.length > 0 ? (
+          <div className="card-flat">
+            <div className="border-b border-hairline-soft pb-3 mb-4">
+              <span className="type-micro-caps text-stone font-semibold">Dependencies Check</span>
+            </div>
+            
+            {theme.dependencies && theme.dependencies.items.length > 0 ? (
+              <div className="space-y-4">
+                <p className="type-meta text-stone">
+                  Verify required system libraries, helper utilities, and font files:
+                </p>
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-400 mb-2">
-                    Verify required system libraries, helper utilities, and font files:
-                  </p>
-                  <div className="space-y-2">
-                    {theme.dependencies.items.map((dep) => (
-                      <div 
-                        key={dep.name} 
-                        className={`flex items-center justify-between p-2.5 rounded-lg border text-xs ${
-                          dep.installed 
-                            ? "bg-emerald-500/5 border-emerald-500/10 text-gray-300" 
-                            : "bg-amber-500/5 border-amber-500/10 text-gray-400"
-                        }`}
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-white">{dep.name}</span>
-                          <span className="text-[10px] text-gray-500 uppercase mt-0.5 tracking-wider">{dep.kind}</span>
-                        </div>
-                        {dep.installed ? (
-                          <span className="text-emerald-400 flex items-center gap-0.5 font-semibold text-[11px]">
-                            <FiCheck size={14} /> Met
-                          </span>
-                        ) : (
-                          <span className="text-amber-500 flex items-center gap-0.5 font-semibold text-[11px]">
-                            <FiX size={14} /> Missing
-                          </span>
-                        )}
+                  {theme.dependencies.items.map((dep) => (
+                    <div 
+                      key={dep.name} 
+                      className={`flex items-center justify-between p-3 border text-xs ${
+                        dep.installed 
+                          ? "bg-canvas border-hairline-soft text-ink" 
+                          : "bg-canvas-warm border-hairline-soft/40 text-stone"
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-ink">{dep.name}</span>
+                        <span className="type-micro-caps text-stone text-[10px] mt-0.5 tracking-wider">{dep.kind}</span>
                       </div>
-                    ))}
-                  </div>
+                      {dep.installed ? (
+                        <span className="text-ink flex items-center gap-0.5 font-semibold text-[11px]">
+                          <FiCheck size={14} /> Met
+                        </span>
+                      ) : (
+                        <span className="text-stone flex items-center gap-0.5 font-semibold text-[11px]">
+                          <FiX size={14} /> Missing
+                        </span>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <div className="text-xs text-gray-400 italic py-6 text-center">
-                  No dependencies specified for this theme.
-                </div>
-              )}
-            </Card.Content>
-          </Card>
+              </div>
+            ) : (
+              <div className="type-body text-stone italic py-6 text-center">
+                No dependencies specified for this theme.
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

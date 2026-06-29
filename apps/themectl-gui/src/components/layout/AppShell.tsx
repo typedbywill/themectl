@@ -13,13 +13,15 @@ import {
   FiSquare,
   FiX,
   FiChevronLeft,
-  FiChevronRight
+  FiChevronRight,
+  FiSun,
+  FiMoon
 } from "react-icons/fi";
 import { useThemeUIStore } from "../../stores/themeStore";
 
 export const AppShell: React.FC = () => {
   const location = useLocation();
-  const { sidebarCollapsed, toggleSidebar } = useThemeUIStore();
+  const { sidebarCollapsed, toggleSidebar, darkMode, toggleDarkMode } = useThemeUIStore();
   const [appWindow, setAppWindow] = useState<any>(null);
 
   useEffect(() => {
@@ -44,20 +46,23 @@ export const AppShell: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#0a0e17] text-[#f3f4f6]">
+    <div className="flex flex-col h-screen overflow-hidden bg-canvas text-ink">
       {/* Tauri custom titlebar */}
-      <div className="titlebar flex items-center justify-between bg-[#070a10] border-b border-[#1e293b] select-none h-9 px-3 w-full" data-tauri-drag-region>
-        <div className="flex items-center gap-2 pointer-events-none text-xs font-semibold tracking-wider text-[#9ca3af]">
-          <span className="text-[#7c3aed] font-bold text-sm">◈</span> themectl
+      <div className="titlebar flex items-center justify-between bg-canvas border-b border-hairline-soft select-none h-9 px-3 w-full" data-tauri-drag-region>
+        <div className="flex items-center gap-2 pointer-events-none type-link-sm text-ink lowercase">
+          themectl
         </div>
         <div className="flex items-center">
-          <div className="titlebar-button text-gray-400 hover:text-white" onClick={handleMinimize}>
+          <div className="titlebar-button hover:text-ink" onClick={toggleDarkMode} title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+            {darkMode ? <FiSun size={15} /> : <FiMoon size={15} />}
+          </div>
+          <div className="titlebar-button hover:text-ink" onClick={handleMinimize}>
             <FiMinus size={14} />
           </div>
-          <div className="titlebar-button text-gray-400 hover:text-white" onClick={handleMaximize}>
+          <div className="titlebar-button hover:text-ink" onClick={handleMaximize}>
             <FiSquare size={12} />
           </div>
-          <div className="titlebar-button close text-gray-400" onClick={handleClose}>
+          <div className="titlebar-button close" onClick={handleClose}>
             <FiX size={14} />
           </div>
         </div>
@@ -65,7 +70,7 @@ export const AppShell: React.FC = () => {
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* Sidebar */}
-        <aside className={`${sidebarCollapsed ? 'w-16' : 'w-56'} flex flex-col justify-between bg-[#0b0f19] border-r border-[#1e293b] transition-all duration-200 ease-in-out`}>
+        <aside className={`${sidebarCollapsed ? 'w-16' : 'w-56'} flex flex-col justify-between bg-canvas border-r border-hairline-soft transition-all duration-200 ease-in-out`}>
           <div className="flex flex-col pt-4">
             <nav className="space-y-1 px-2">
               {navigation.map((item) => {
@@ -75,10 +80,10 @@ export const AppShell: React.FC = () => {
                   <Link
                     key={item.name}
                     to={item.path}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                    className={`flex items-center gap-3 px-3 py-2.5 transition-all duration-150 type-link-sm ${
                       isActive 
-                        ? "bg-[#7c3aed]/10 text-[#a78bfa] border-l-2 border-[#7c3aed]" 
-                        : "text-gray-400 hover:bg-gray-800/40 hover:text-white"
+                        ? "text-ink border-l-2 border-primary bg-hairline-soft/50 pl-2.5" 
+                        : "text-stone hover:bg-hairline-soft hover:text-ink pl-3"
                     }`}
                   >
                     <Icon size={18} className="shrink-0" />
@@ -92,10 +97,10 @@ export const AppShell: React.FC = () => {
           <div className="flex flex-col pb-4 px-2 gap-2">
             <Link
               to="/settings"
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              className={`flex items-center gap-3 px-3 py-2.5 transition-all duration-150 type-link-sm ${
                 location.pathname === "/settings"
-                  ? "bg-[#7c3aed]/10 text-[#a78bfa] border-l-2 border-[#7c3aed]"
-                  : "text-gray-400 hover:bg-gray-800/40 hover:text-white"
+                  ? "text-ink border-l-2 border-primary bg-hairline-soft/50 pl-2.5"
+                  : "text-stone hover:bg-hairline-soft hover:text-ink pl-3"
               }`}
             >
               <FiSliders size={18} className="shrink-0" />
@@ -104,7 +109,7 @@ export const AppShell: React.FC = () => {
 
             <button
               onClick={toggleSidebar}
-              className="flex items-center gap-3 px-3 py-2 text-gray-500 hover:text-gray-300 rounded-lg text-sm font-medium transition-all duration-150 w-full"
+              className="flex items-center gap-3 px-3 py-2 text-stone hover:text-ink rounded-lg text-sm font-medium transition-all duration-150 w-full"
             >
               {sidebarCollapsed ? <FiChevronRight size={18} /> : <div className="flex items-center gap-3"><FiChevronLeft size={18} /> <span>Collapse Sidebar</span></div>}
             </button>

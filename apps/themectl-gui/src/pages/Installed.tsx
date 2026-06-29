@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Card, 
-  Button, 
-  Spinner, 
-  Chip
-} from "@heroui/react";
+import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
 import { useInstalledThemes, useRemoveTheme } from "../hooks/useThemes";
 import { PreviewModal } from "../components/themes/PreviewModal";
@@ -56,107 +51,80 @@ export const Installed: React.FC = () => {
   const getSignatureBadge = (status: any) => {
     if (status === "Verified") {
       return (
-        <Chip 
-          size="sm" 
-          variant="soft" 
-          color="success" 
-          className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs"
-        >
-          <div className="flex items-center gap-1">
-            <FiShield size={12} />
-            <Chip.Label>Verified</Chip.Label>
-          </div>
-        </Chip>
+        <span className="monochrome-badge monochrome-badge-outline gap-1 text-ink">
+          <FiShield size={12} className="text-stone" />
+          <span>Verified</span>
+        </span>
       );
     } else if (status === "Unsigned") {
       return (
-        <Chip 
-          size="sm" 
-          variant="soft" 
-          color="warning" 
-          className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs"
-        >
-          <div className="flex items-center gap-1">
-            <FiAlertTriangle size={12} />
-            <Chip.Label>Unsigned</Chip.Label>
-          </div>
-        </Chip>
+        <span className="monochrome-badge monochrome-badge-outline gap-1 text-stone">
+          <FiAlertTriangle size={12} />
+          <span>Unsigned</span>
+        </span>
       );
     } else {
       return (
-        <Chip 
-          size="sm" 
-          variant="soft" 
-          color="danger" 
-          className="bg-red-500/10 text-red-400 border border-red-500/20 text-xs"
-        >
-          <div className="flex items-center gap-1">
-            <FiAlertTriangle size={12} />
-            <Chip.Label>Invalid</Chip.Label>
-          </div>
-        </Chip>
+        <span className="monochrome-badge monochrome-badge-outline border-red-200 text-red-500 gap-1">
+          <FiAlertTriangle size={12} />
+          <span>Invalid</span>
+        </span>
       );
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-2">
-        <Spinner size="lg" color="accent" />
-        <span className="text-sm text-gray-400">Loading installed themes...</span>
+      <div className="flex flex-col items-center justify-center h-full gap-4">
+        <Spinner size="md" className="text-ink" />
+        <span className="type-meta text-stone">Loading installed themes...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto">
       <PageHeader 
+        eyebrow="Local storage"
         title="Installed Themes" 
         subtitle="Manage and apply themes installed on your machine." 
       />
 
       {themes?.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-[#111827]/40 rounded-2xl border border-dashed border-[#1e293b] text-gray-400">
-          <FiAlertTriangle size={36} className="text-amber-500 mb-3" />
-          <p className="text-sm font-semibold">No themes installed yet</p>
-          <p className="text-xs text-gray-500 mt-1 mb-4">You can download new themes from the store.</p>
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline-soft text-stone">
+          <FiAlertTriangle size={32} className="text-stone mb-4" />
+          <p className="type-body-strong text-ink">No themes installed yet</p>
+          <p className="type-meta text-stone mt-1 mb-5">You can download new themes from the store.</p>
           <Link to="/themes">
-            <Button size="sm" variant="secondary">
+            <button className="btn-primary">
               Go to Theme Store
-            </Button>
+            </button>
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-6">
           {themes?.map((theme) => (
-            <Card 
+            <div 
               key={theme.name} 
-              className={`bg-[#111827] border ${theme.is_applied ? "border-[#7c3aed]" : "border-[#1e293b]"} hover:border-[#7c3aed]/50 transition-all duration-150`}
+              className={theme.is_applied ? "card-featured" : "card-flat"}
             >
-              <Card.Content className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-bold text-white">{theme.display_name || theme.name}</h3>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h3 className="type-heading-sm text-ink font-medium">{theme.display_name || theme.name}</h3>
                     {theme.is_applied && (
-                      <Chip 
-                        size="sm" 
-                        color="accent" 
-                        variant="soft"
-                        className="bg-[#7c3aed]/10 text-[#a78bfa] border border-[#7c3aed]/20 text-xs font-semibold px-2 py-0.5"
-                      >
-                        <div className="flex items-center gap-1">
-                          <FiCheckCircle size={13} />
-                          <Chip.Label>Applied</Chip.Label>
-                        </div>
-                      </Chip>
+                      <span className="monochrome-badge monochrome-badge-active gap-1">
+                        <FiCheckCircle size={13} />
+                        <span>Applied</span>
+                      </span>
                     )}
                     {getSignatureBadge(theme.signature_status)}
                   </div>
                   
-                  <p className="text-xs text-gray-400 max-w-2xl">{theme.description || "No description provided."}</p>
+                  <p className="type-body text-graphite max-w-3xl">{theme.description || "No description provided."}</p>
                   
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 pt-1">
-                    <span className="flex items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-4 type-meta text-stone pt-1">
+                    <span className="flex items-center gap-1.5">
                       <FiCalendar size={13} />
                       Installed: {new Date(theme.installed_at).toLocaleDateString()}
                     </span>
@@ -166,54 +134,50 @@ export const Installed: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                  <div title="Theme Details">
-                    <Link to={`/installed/${theme.name}`}>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="text-gray-300 border-gray-700 hover:bg-gray-800"
-                      >
-                        <FiInfo size={16} />
-                      </Button>
-                    </Link>
-                  </div>
+                  <Link to={`/installed/${theme.name}`} title="Theme Details">
+                    <button className="btn-ghost w-10 h-10 p-0 flex items-center justify-center rounded-full">
+                      <FiInfo size={16} />
+                    </button>
+                  </Link>
 
-                  <div title="Export Theme package">
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      className="text-gray-300 border-gray-700 hover:bg-gray-800"
-                      onPress={() => handleExport(theme.name)}
-                      isPending={exporting === theme.name}
-                    >
+                  <button 
+                    className="btn-ghost w-10 h-10 p-0 flex items-center justify-center rounded-full"
+                    title="Export Theme package"
+                    onClick={() => handleExport(theme.name)}
+                    disabled={exporting === theme.name}
+                  >
+                    {exporting === theme.name ? (
+                      <Spinner size="sm" className="text-ink" />
+                    ) : (
                       <FiDownloadCloud size={16} />
-                    </Button>
-                  </div>
+                    )}
+                  </button>
 
-                  <div title="Uninstall Theme">
-                    <Button 
-                      size="sm" 
-                      variant="danger-soft" 
-                      onPress={() => handleRemove(theme.name)}
-                      isPending={removeMutation.isPending && removeMutation.variables?.name === theme.name}
-                    >
+                  <button 
+                    className="btn-ghost w-10 h-10 p-0 flex items-center justify-center rounded-full hover:border-red-500 hover:text-red-500"
+                    title="Uninstall Theme"
+                    onClick={() => handleRemove(theme.name)}
+                    disabled={removeMutation.isPending && removeMutation.variables?.name === theme.name}
+                  >
+                    {removeMutation.isPending && removeMutation.variables?.name === theme.name ? (
+                      <Spinner size="sm" className="text-ink" />
+                    ) : (
                       <FiTrash2 size={16} />
-                    </Button>
-                  </div>
+                    )}
+                  </button>
 
-                  <Button
-                    size="sm"
-                    className="bg-[#7c3aed] hover:bg-[#9333ea] text-white font-medium"
-                    onPress={() => handleApplyClick(theme.name)}
+                  <button
+                    className="btn-primary"
+                    onClick={() => handleApplyClick(theme.name)}
                   >
                     <div className="flex items-center gap-1.5">
                       <FiPlay size={14} />
                       <span>Apply Theme</span>
                     </div>
-                  </Button>
+                  </button>
                 </div>
-              </Card.Content>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}

@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import { 
-  Input, 
-  Card, 
-  Button, 
-  Spinner, 
-  Chip 
-} from "@heroui/react";
+import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
 import { useAvailableThemes, useInstallTheme } from "../hooks/useThemes";
 import { 
@@ -38,133 +32,122 @@ export const Themes: React.FC = () => {
 
   const getSignatureBadge = () => {
     return (
-      <Chip 
-        size="sm" 
-        variant="soft" 
-        color="success" 
-        className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs"
-      >
-        <div className="flex items-center gap-1">
-          <FiShield size={12} />
-          <Chip.Label>Verified</Chip.Label>
-        </div>
-      </Chip>
+      <span className="monochrome-badge monochrome-badge-secondary gap-1">
+        <FiShield size={12} />
+        <span>Verified</span>
+      </span>
     );
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-2">
-        <Spinner size="lg" color="accent" />
-        <span className="text-sm text-gray-400">Loading theme store...</span>
+      <div className="flex flex-col items-center justify-center h-full gap-4">
+        <Spinner size="md" className="text-ink" />
+        <span className="type-meta text-stone">Loading theme catalog...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto">
       <PageHeader 
-        title="Theme Store" 
+        eyebrow="Theme store"
+        title="Discover Themes" 
         subtitle="Discover and download new visual configurations from your active repositories." 
         actions={
-          <Button 
-            size="sm" 
-            variant="secondary" 
-            onPress={() => refetch()}
-            className="border border-[#7c3aed]/20"
+          <button 
+            onClick={() => refetch()}
+            className="btn-ghost"
           >
             Refresh Catalog
-          </Button>
+          </button>
         }
       />
 
       {/* Search and Filters */}
-      <div className="w-full max-w-md relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-          <FiSearch className="text-gray-400" />
-        </div>
-        <Input
+      <div className="w-full max-w-md relative flex items-center">
+        <FiSearch className="text-stone absolute left-0 pointer-events-none" size={18} />
+        <input
+          type="text"
           placeholder="Search themes by name, author or tags..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 bg-[#111827] border-[#1e293b] text-white"
+          className="form-field-input pl-7"
         />
       </div>
 
       {filteredThemes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-[#111827]/40 rounded-2xl border border-dashed border-[#1e293b] text-gray-400">
-          <FiAlertTriangle size={36} className="text-amber-500 mb-3" />
-          <p className="text-sm font-semibold">No themes found</p>
-          <p className="text-xs text-gray-500 mt-1">Try refining your search terms or verify your repositories.</p>
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline-soft text-stone">
+          <FiAlertTriangle size={32} className="text-stone mb-4" />
+          <p className="type-body-strong text-ink">No themes found</p>
+          <p className="type-meta text-stone mt-1">Try refining your search terms or verify your repositories.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {filteredThemes.map((theme) => (
-            <Card key={theme.name} className="bg-[#111827] border border-[#1e293b] group hover:border-[#7c3aed]/50 transition-all duration-200 flex flex-col justify-between">
+            <div key={theme.name} className="card-flat group hover:border-stone transition-colors duration-150 justify-between min-h-[420px]">
               <div>
                 {/* Image Placeholder */}
-                <div className="h-40 w-full bg-gradient-to-br from-indigo-950 via-[#111827] to-slate-900 flex items-center justify-center border-b border-[#1e293b] relative overflow-hidden">
-                  <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-300 opacity-60" style={{ backgroundImage: theme.screenshots?.[0] ? `url(${theme.screenshots[0]})` : undefined }} />
-                  {!theme.screenshots?.[0] && (
-                    <span className="text-[#a78bfa] font-bold text-lg opacity-40 select-none tracking-widest uppercase">
+                <div className="media-thumbnail-placeholder bg-surface-cool border-b border-hairline-soft mb-5">
+                  {theme.screenshots?.[0] ? (
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-300 opacity-80" 
+                      style={{ backgroundImage: `url(${theme.screenshots[0]})` }} 
+                    />
+                  ) : (
+                    <span className="type-micro-caps text-stone opacity-60 tracking-wider font-semibold select-none">
                       {theme.display_name || theme.name}
                     </span>
                   )}
-                  <div className="absolute top-2 right-2 flex gap-1.5 font-sans">
+                  <div className="absolute top-3 right-3 flex gap-1.5">
                     {getSignatureBadge()}
-                    <Chip size="sm" variant="soft" color="default" className="border border-gray-700/50">
-                      <Chip.Label>v{theme.version}</Chip.Label>
-                    </Chip>
+                    <span className="monochrome-badge monochrome-badge-outline">
+                      v{theme.version}
+                    </span>
                   </div>
                 </div>
 
-                <div className="p-4 space-y-3">
-                  <div>
-                    <h4 className="text-base font-bold text-white group-hover:text-[#a78bfa] transition-colors duration-150">
-                      {theme.display_name || theme.name}
-                    </h4>
-                    <p className="text-xs text-gray-400 mt-0.5">by {theme.author || "Unknown"}</p>
-                  </div>
+                <div className="space-y-2">
+                  <h4 className="type-heading-sm text-ink group-hover:underline">
+                    {theme.display_name || theme.name}
+                  </h4>
+                  <p className="type-meta text-stone">by {theme.author || "Unknown"}</p>
                   
-                  <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed min-h-[48px]">
+                  <p className="type-body text-graphite line-clamp-3 leading-relaxed pt-2">
                     {theme.description || "No description provided."}
                   </p>
                 </div>
               </div>
 
-              <Card.Footer className="p-4 border-t border-[#1e293b] flex items-center justify-between bg-gray-900/10">
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <div className="pt-6 border-t border-hairline-soft mt-6 flex items-center justify-between">
+                <div className="flex items-center gap-1.5 type-meta text-stone">
                   <FiGlobe size={13} />
                   <span>{theme.source_name}</span>
                 </div>
 
                 {theme.is_installed ? (
-                  <Chip 
-                    size="sm" 
-                    variant="soft" 
-                    color="success" 
-                    className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold"
-                  >
-                    <div className="flex items-center gap-1">
-                      <FiCheck size={13} />
-                      <Chip.Label>Installed</Chip.Label>
-                    </div>
-                  </Chip>
+                  <span className="monochrome-badge monochrome-badge-active gap-1">
+                    <FiCheck size={13} />
+                    <span>Installed</span>
+                  </span>
                 ) : (
-                  <Button
-                    size="sm"
-                    className="bg-[#7c3aed] hover:bg-[#9333ea] text-white font-medium"
-                    onPress={() => handleInstall(theme.name)}
-                    isPending={installMutation.isPending && installMutation.variables?.source === theme.name}
+                  <button
+                    className="btn-primary"
+                    onClick={() => handleInstall(theme.name)}
+                    disabled={installMutation.isPending && installMutation.variables?.source === theme.name}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <FiDownload size={14} />
-                      <span>Install</span>
-                    </div>
-                  </Button>
+                    {installMutation.isPending && installMutation.variables?.source === theme.name ? (
+                      <Spinner size="sm" className="text-on-primary" />
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <FiDownload size={14} />
+                        <span>Install</span>
+                      </div>
+                    )}
+                  </button>
                 )}
-              </Card.Footer>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}

@@ -1,10 +1,5 @@
 import React from "react";
-import { 
-  Card, 
-  Button, 
-  Spinner, 
-  Chip
-} from "@heroui/react";
+import { Spinner } from "@heroui/react";
 import { PageHeader } from "../components/layout/PageHeader";
 import { useBackups, useRestoreBackup, useDeleteBackup } from "../hooks/useBackups";
 import { 
@@ -35,104 +30,101 @@ export const Backups: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-2">
-        <Spinner size="lg" color="accent" />
-        <span className="text-sm text-gray-400">Loading backups...</span>
+      <div className="flex flex-col items-center justify-center h-full gap-4">
+        <Spinner size="md" className="text-ink" />
+        <span className="type-meta text-stone">Loading backups...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto">
       <PageHeader 
+        eyebrow="Configuration Rollback"
         title="Backups" 
         subtitle="Manage visual configuration snapshots. You can restore your desktop layout at any time." 
       />
 
       {backups?.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-[#111827]/40 rounded-2xl border border-dashed border-[#1e293b] text-gray-400">
-          <FiAlertTriangle size={36} className="text-amber-500 mb-3" />
-          <p className="text-sm font-semibold">No backup snapshots found</p>
-          <p className="text-xs text-gray-500 mt-1">
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline-soft text-stone">
+          <FiAlertTriangle size={32} className="text-stone mb-4" />
+          <p className="type-body-strong text-ink">No backup snapshots found</p>
+          <p className="type-meta text-stone mt-1">
             Backups are generated automatically when a new theme package is applied.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-6">
           {backups?.map((snap) => (
-            <Card 
+            <div 
               key={snap.timestamp} 
-              className={`bg-[#111827] border ${snap.is_current ? "border-emerald-500/50" : "border-[#1e293b]"} hover:border-gray-800 transition-all duration-150`}
+              className={snap.is_current ? "card-featured" : "card-flat"}
             >
-              <Card.Content className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div className="space-y-2 flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-white flex items-center gap-1.5">
-                      <FiClock className="text-gray-500 shrink-0" size={16} />
+                    <h3 className="type-heading-sm text-ink flex items-center gap-2 font-medium">
+                      <FiClock className="text-stone shrink-0" size={16} />
                       {snap.timestamp}
                     </h3>
                     {snap.is_current && (
-                      <Chip 
-                        size="sm" 
-                        color="success" 
-                        variant="soft"
-                        className="border border-emerald-500/25 px-2"
-                      >
-                        <Chip.Label className="text-[10px] font-semibold uppercase">Active configuration</Chip.Label>
-                      </Chip>
+                      <span className="monochrome-badge monochrome-badge-active">Active configuration</span>
                     )}
                   </div>
 
-                  <p className="text-xs text-gray-400">
+                  <p className="type-meta text-stone">
                     Created: {new Date(snap.created_at).toLocaleString()}
                   </p>
 
-                  <div className="flex flex-wrap gap-4 text-xs text-gray-500 pt-1">
+                  <div className="flex flex-wrap gap-4 type-meta text-stone pt-2">
                     {snap.theme_applied && (
-                      <span className="flex items-center gap-1">
-                        <FiLayers size={13} className="text-gray-600" />
-                        Theme: <strong className="text-gray-300 font-medium">{snap.theme_applied}</strong>
+                      <span className="flex items-center gap-1.5">
+                        <FiLayers size={13} className="text-stone" />
+                        Theme: <strong className="text-ink font-medium">{snap.theme_applied}</strong>
                       </span>
                     )}
-                    <span className="flex items-center gap-1 truncate max-w-xs">
-                      <FiSliders size={13} className="text-gray-600" />
-                      Plasma Style: <span className="text-gray-400 font-medium truncate">{snap.plasma_style || "None"}</span>
+                    <span className="flex items-center gap-1.5 truncate max-w-xs">
+                      <FiSliders size={13} className="text-stone" />
+                      Plasma Style: <span className="text-ink font-medium truncate">{snap.plasma_style || "None"}</span>
                     </span>
-                    <span className="flex items-center gap-1 truncate max-w-xs">
-                      <FiSliders size={13} className="text-gray-600" />
-                      Color: <span className="text-gray-400 font-medium truncate">{snap.color_scheme || "None"}</span>
+                    <span className="flex items-center gap-1.5 truncate max-w-xs">
+                      <FiSliders size={13} className="text-stone" />
+                      Color: <span className="text-ink font-medium truncate">{snap.color_scheme || "None"}</span>
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                  <div title="Permanently Delete Snapshot">
-                    <Button 
-                      size="sm" 
-                      variant="danger-soft" 
-                      isIconOnly 
-                      onPress={() => handleDelete(snap.timestamp)}
-                      isPending={restoreMutation.isPending || deleteMutation.isPending}
-                    >
-                      <FiTrash2 size={16} />
-                    </Button>
-                  </div>
-
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="border border-[#7c3aed]/25"
-                    onPress={() => handleRestore(snap.timestamp)}
-                    isPending={restoreMutation.isPending && restoreMutation.variables === snap.timestamp}
+                  <button 
+                    onClick={() => handleDelete(snap.timestamp)}
+                    disabled={restoreMutation.isPending || deleteMutation.isPending}
+                    className="btn-ghost w-10 h-10 p-0 flex items-center justify-center rounded-full hover:border-red-500 hover:text-red-500"
+                    title="Permanently Delete Snapshot"
                   >
-                    <div className="flex items-center gap-1.5">
-                      <FiCornerUpLeft size={14} />
-                      <span>Restore Point</span>
-                    </div>
-                  </Button>
+                    {deleteMutation.isPending && deleteMutation.variables === snap.timestamp ? (
+                      <Spinner size="sm" className="text-ink" />
+                    ) : (
+                      <FiTrash2 size={16} />
+                    )}
+                  </button>
+
+                  <button
+                    className="btn-ghost"
+                    onClick={() => handleRestore(snap.timestamp)}
+                    disabled={restoreMutation.isPending}
+                  >
+                    {restoreMutation.isPending && restoreMutation.variables === snap.timestamp ? (
+                      <Spinner size="sm" className="text-ink" />
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <FiCornerUpLeft size={14} />
+                        <span>Restore Point</span>
+                      </div>
+                    )}
+                  </button>
                 </div>
-              </Card.Content>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}
