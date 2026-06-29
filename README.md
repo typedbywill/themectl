@@ -1,8 +1,14 @@
 # themectl
 
-> **A declarative, cryptographically-secure theme manager for KDE Plasma, written in Rust.**
+> **Install, share and restore complete KDE Plasma themes with a single command.**
 
 `themectl` lets you install, apply, export, and roll back visual themes on KDE Plasma 5/6 from local packages, remote URLs, or curated repositories — all from a single CLI command.
+
+![Build](https://img.shields.io/github/actions/workflow/status/yourusername/themectl/ci.yml?style=flat-square)
+![Crates.io](https://img.shields.io/crates/v/themectl-cli?style=flat-square)
+![License](https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square)
+![Rust](https://img.shields.io/badge/rust-stable-orange?style=flat-square&logo=rust)
+![KDE Plasma](https://img.shields.io/badge/KDE%20Plasma-5%20%2F%206-1d99f3?style=flat-square&logo=kde)
 
 ---
 
@@ -20,19 +26,33 @@
 
 ---
 
-## Table of Contents
+## Why?
 
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Commands](#commands)
-- [Theme Package Format](#theme-package-format)
-  - [theme.yaml manifest](#themeyaml-manifest)
-  - [theme.lock](#themelock)
-  - [Package structure](#package-structure)
-- [Cryptographic Signing](#cryptographic-signing)
-- [Workspace Architecture](#workspace-architecture)
-- [Building from Source](#building-from-source)
-- [License](#license)
+Customizing KDE Plasma often requires manually installing and configuring:
+
+- Plasma themes
+- Color schemes
+- Icon packs
+- Cursor themes
+- Kvantum themes
+- GTK themes
+- Fonts
+- Wallpapers
+- Konsole profiles
+
+Each component lives in a different directory, requires a different tool to apply, and is completely isolated from the others. Sharing your setup with someone else means sending them a list of instructions, not a file.
+
+`themectl` provides a **single package format** and a **single command** to manage all of them — declaratively, reproducibly, and with rollback support.
+
+---
+
+## Philosophy
+
+- **Declarative** — themes are described in a `theme.yaml` manifest, not scripts
+- **Portable** — a single `.theme` file bundles everything needed
+- **Secure by default** — Ed25519 signatures are verified before any file is installed
+- **Reproducible** — `theme.lock` records the exact environment a theme was designed for
+- **Open and federated** — anyone can host a theme repository; there is no central registry
 
 ---
 
@@ -264,6 +284,20 @@ my-theme.theme (THEMECTL magic header + gzipped tar)
 
 ---
 
+## Security Model
+
+> **Short answer:** downloading a theme with `themectl` is safe. Themes cannot run code.
+
+- **Themes are never executed as scripts** — they contain only declarative assets (YAML, image files, font files, config files) and metadata
+- **Theme packages contain only assets and metadata** — no shell scripts, no binaries, no executable code of any kind
+- **Signatures are verified before installation** — if a theme includes an Ed25519 signature, it is cryptographically verified against a canonical hash of all package contents before any file is written to disk
+- **Invalid signatures abort installation** — a tampered package will be rejected entirely; no partial installation occurs
+- **Extraction is protected against path traversal** — the tar unpacker rejects entries with absolute paths or `..` components
+
+Unsigned themes are permitted with an explicit warning. If security is a concern, use `themectl verify <name>` at any time or only install from repositories you trust.
+
+---
+
 ## Cryptographic Signing
 
 `themectl` uses **Ed25519** signatures to verify theme integrity. The signature covers a **canonical SHA-256 hash** of all theme files (sorted by relative path), with the `signature` block stripped from `theme.yaml` before hashing (to prevent circular dependency).
@@ -272,6 +306,21 @@ my-theme.theme (THEMECTL magic header + gzipped tar)
 - **Verification**: on `install`, if a signature is present, `themectl` verifies it automatically. On failure, installation is aborted.
 - **Unsigned themes**: allowed with a warning (`⚠ Theme has no cryptographic signature. Installing anyway.`).
 - **Manual verification**: `themectl verify <name|path>` re-checks a signature at any time.
+
+---
+
+## Contributing
+
+Contributions are welcome! The project is structured as a Cargo workspace — each crate has a focused responsibility, making it easy to work on a single area without touching the rest.
+
+Before submitting a pull request:
+
+```sh
+cargo test --workspace   # all tests must pass
+cargo clippy --workspace # no new warnings
+```
+
+See the [Workspace Architecture](#workspace-architecture) section below for an overview of the codebase.
 
 ---
 
