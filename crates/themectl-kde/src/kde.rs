@@ -308,6 +308,29 @@ pub fn apply(theme_dir: &Path, manifest: &ThemeManifest, opts: ApplyOptions) -> 
                 }
             }
         }
+
+        // 10. global_theme
+        if is_enabled("global_theme") {
+            if let Some(ref global_theme_path) = comp.global_theme {
+                if check_tool("plasma-apply-lookandfeel") {
+                    report.applied.push("global_theme".to_string());
+                    if !opts.dry_run {
+                        let clean_p = if global_theme_path.starts_with("./") { &global_theme_path[2..] } else { global_theme_path };
+                        let src_dir = theme_dir.join(clean_p);
+                        let dest_dir = local_data.join("plasma/look-and-feel").join(&manifest.name);
+                        if src_dir.exists() {
+                            copy_dir(&src_dir, &dest_dir)?;
+                            let _ = run("plasma-apply-lookandfeel", &["-a", &manifest.name]);
+                        } else {
+                            report.warnings.push(format!("Global theme dir not found: {:?}", src_dir));
+                        }
+                    }
+                } else {
+                    report.skipped.push("global_theme".to_string());
+                    report.warnings.push("plasma-apply-lookandfeel not found".to_string());
+                }
+            }
+        }
     }
 
     Ok(report)

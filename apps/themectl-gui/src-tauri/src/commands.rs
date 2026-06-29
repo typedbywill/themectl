@@ -76,6 +76,7 @@ fn map_manifest_to_installed(name: &str, version: &str, manifest: &ThemeManifest
             fonts: comp.fonts.is_some(),
             konsole_profile: comp.konsole_profile.is_some(),
             cursor_theme: comp.cursor_theme.is_some(),
+            global_theme: comp.global_theme.is_some(),
         }
     } else {
         ComponentsDto {
@@ -88,6 +89,7 @@ fn map_manifest_to_installed(name: &str, version: &str, manifest: &ThemeManifest
             fonts: false,
             konsole_profile: false,
             cursor_theme: false,
+            global_theme: false,
         }
     };
 
@@ -336,6 +338,7 @@ pub async fn preview_theme(name: String) -> std::result::Result<PreviewDto, Stri
             add_change("wallpaper", "Will set desktop background wallpaper", comp.wallpaper.is_some());
             add_change("fonts", "Will install system font files", comp.fonts.is_some());
             add_change("konsole_profile", "Will add a profile configuration to Konsole", comp.konsole_profile.is_some());
+            add_change("global_theme", "Will apply KDE global theme (look and feel)", comp.global_theme.is_some());
         }
 
         if let Some(ref deps) = manifest.dependencies {
@@ -884,6 +887,7 @@ pub async fn create_theme(dto: CreateThemeDto) -> std::result::Result<CreateThem
             fonts: None,
             konsole_profile: dto.konsole_profile.clone(),
             cursor_theme: dto.cursor_theme.clone(),
+            global_theme: None,
         };
         
         if let Some(ref wall_path_str) = dto.wallpaper_path {

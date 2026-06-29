@@ -8,6 +8,7 @@ export interface Components {
   fonts: boolean;
   konsole_profile: boolean;
   cursor_theme: boolean;
+  global_theme: boolean;
 }
 
 export type SignatureStatus = 

@@ -29,6 +29,7 @@ pub struct ComponentsDto {
     pub fonts: bool,
     pub konsole_profile: bool,
     pub cursor_theme: bool,
+    pub global_theme: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]

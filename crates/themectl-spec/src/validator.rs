@@ -101,6 +101,9 @@ pub fn validate(manifest: &ThemeManifest, package_dir: &Path) -> Result<()> {
         if let Some(ref p) = comp.cursor_theme {
             check_path(p)?;
         }
+        if let Some(ref p) = comp.global_theme {
+            check_path(p)?;
+        }
     }
 
     Ok(())
@@ -371,6 +374,7 @@ mod tests {
             fonts: None,
             konsole_profile: None,
             cursor_theme: None,
+            global_theme: None,
         });
 
         // Path does not exist

@@ -24,6 +24,39 @@
       "supports": ["kde-plasma-6"],
       "download_url": "http://127.0.0.1:8765/themes/catppuccin-mocha.theme",
       "size_bytes": 4108
+    },
+    {
+      "name": "se7enaero",
+      "display_name": "Se7en Aero",
+      "version": "3.1.0",
+      "description": "A modern Windows 7-like theme for KDE plasma.",
+      "author": "LinLinXZA",
+      "license": "GPL-2.0+",
+      "supports": ["kde-plasma-6", "kde-plasma-5"],
+      "download_url": "http://127.0.0.1:8765/themes/se7enaero.theme",
+      "size_bytes": 2160246
+    },
+    {
+      "name": "exair-global",
+      "display_name": "Expose Air",
+      "version": "6.0.0",
+      "description": "Aero for my Expose series.",
+      "author": "Mark Whittaker",
+      "license": "GPL-2.0+",
+      "supports": ["kde-plasma-6", "kde-plasma-5"],
+      "download_url": "http://127.0.0.1:8765/themes/exair-global.theme",
+      "size_bytes": 433734
+    },
+    {
+      "name": "claude-code",
+      "display_name": "Claude Code",
+      "version": "1.0.0",
+      "description": "Warm-dark Global Theme with the Claude coral accent.",
+      "author": "Hodahel Moinzadeh (HodyTech)",
+      "license": "MIT",
+      "supports": ["kde-plasma-6", "kde-plasma-5"],
+      "download_url": "http://127.0.0.1:8765/themes/claude-code.theme",
+      "size_bytes": 17204976
     }
   ]
 }

@@ -545,6 +545,7 @@ pub fn export(output: Option<&str>, dry_run: bool) -> Result<()> {
         fonts: None,
         konsole_profile: None,
         cursor_theme: kde_snap.cursor_theme.clone(),
+        global_theme: None,
     };
 
     // If wallpaper path is present and is a local file, copy it and make it relative

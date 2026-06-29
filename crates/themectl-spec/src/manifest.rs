@@ -90,6 +90,7 @@ pub struct Components {
     pub fonts: Option<Vec<String>>,
     pub konsole_profile: Option<String>,
     pub cursor_theme: Option<String>,
+    pub global_theme: Option<String>,
 }
 
 /// The main manifest structure for theme.yaml.
