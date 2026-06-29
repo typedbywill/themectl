@@ -1,0 +1,24 @@
+[package]
+name = "themectl-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "themectl"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+colored = "2"
+themectl-utils = { path = "../themectl-utils" }
+themectl-core = { path = "../themectl-core" }
+
+[dev-dependencies]
+tempfile = "3"
+assert_cmd = "2"
+predicates = "3"
+rand = "0.8"
+flate2 = "1"
+tar = "0.4"
+ed25519-dalek = { version = "2.1", default-features = false, features = ["rand_core"] }
+themectl-security = { path = "../themectl-security" }

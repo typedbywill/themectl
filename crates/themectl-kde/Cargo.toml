@@ -1,0 +1,9 @@
+[package]
+name = "themectl-kde"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dirs = "5"
+themectl-utils = { path = "../themectl-utils" }
+themectl-spec = { path = "../themectl-spec" }

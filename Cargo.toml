@@ -1,44 +1,14 @@
-[package]
-name = "themectl"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+resolver = "2"
 
-[dependencies]
-# CLI
-clap = { version = "4", features = ["derive"] }
-
-# Serialização
-serde = { version = "1", features = ["derive"] }
-serde_yaml = "0.9"
-serde_json = "1"
-
-# HTTP (para download de temas)
-reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
-
-# Arquivos compactados
-flate2 = "1"
-tar = "0.4"
-
-# Erros
-anyhow = "1"
-thiserror = "1"
-
-# Cores no terminal
-colored = "2"
-
-# Paths
-dirs = "5"
-
-# Data/hora para backups
-chrono = { version = "0.4", features = ["serde"] }
-
-# Assinaturas e Criptografia
-ed25519-dalek = { version = "2.1", default-features = false, features = ["rand_core"] }
-sha2 = "0.10"
-hex = "0.4"
-
-[dev-dependencies]
-tempfile = "3"
-assert_cmd = "2"
-predicates = "3"
-rand = "0.8"
+members = [
+    "crates/themectl-utils",
+    "crates/themectl-spec",
+    "crates/themectl-security",
+    "crates/themectl-theme",
+    "crates/themectl-kde",
+    "crates/themectl-backup",
+    "crates/themectl-repository",
+    "crates/themectl-core",
+    "crates/themectl-cli",
+]

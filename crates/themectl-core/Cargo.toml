@@ -1,0 +1,21 @@
+[package]
+name = "themectl-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+colored = "2"
+dirs = "5"
+chrono = { version = "0.4", features = ["serde"] }
+
+themectl-utils = { path = "../themectl-utils" }
+themectl-spec = { path = "../themectl-spec" }
+themectl-security = { path = "../themectl-security" }
+themectl-theme = { path = "../themectl-theme" }
+themectl-kde = { path = "../themectl-kde" }
+themectl-backup = { path = "../themectl-backup" }
+themectl-repository = { path = "../themectl-repository" }
