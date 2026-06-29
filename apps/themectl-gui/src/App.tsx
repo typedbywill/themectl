@@ -10,6 +10,7 @@ import { Repositories } from "./pages/Repositories";
 import { Backups } from "./pages/Backups";
 import { Doctor } from "./pages/Doctor";
 import { Settings } from "./pages/Settings";
+import { CreateTheme } from "./pages/CreateTheme";
 import { useThemeUIStore } from "./stores/themeStore";
 
 const queryClient = new QueryClient({
@@ -36,6 +37,7 @@ function App() {
             <Route path="/backups" element={<Backups />} />
             <Route path="/doctor" element={<Doctor />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/create" element={<CreateTheme />} />
           </Route>
         </Routes>
       </Router>

@@ -8,7 +8,10 @@ import {
   Source, 
   DoctorReport, 
   GuiSettings,
-  SignatureStatus
+  SignatureStatus,
+  SystemComponent,
+  CreateThemeInput,
+  CreateThemeResult
 } from "../types";
 
 export const api = {
@@ -53,5 +56,14 @@ export const api = {
   
   getSettings: () => invoke<GuiSettings>("get_settings"),
   
-  saveSettings: (settings: GuiSettings) => invoke<void>("save_settings", { settings })
+  saveSettings: (settings: GuiSettings) => invoke<void>("save_settings", { settings }),
+
+  listSystemColorSchemes: () => invoke<SystemComponent[]>("list_system_color_schemes"),
+  listSystemPlasmaStyles: () => invoke<SystemComponent[]>("list_system_plasma_styles"),
+  listSystemIconThemes: () => invoke<SystemComponent[]>("list_system_icon_themes"),
+  listSystemCursorThemes: () => invoke<SystemComponent[]>("list_system_cursor_themes"),
+  listSystemKvantumThemes: () => invoke<SystemComponent[]>("list_system_kvantum_themes"),
+  listSystemGtkThemes: () => invoke<SystemComponent[]>("list_system_gtk_themes"),
+  createTheme: (dto: CreateThemeInput) => invoke<CreateThemeResult>("create_theme", { dto })
 };
+

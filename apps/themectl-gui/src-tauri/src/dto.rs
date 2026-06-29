@@ -133,3 +133,40 @@ pub struct GuiSettingsDto {
     pub auto_remove_old_backups: bool,
     pub signature_policy: String,
 }
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SystemComponentDto {
+    pub name: String,
+    pub path: String,
+}
+
+#[derive(Debug, Clone, Serialize, serde::Deserialize)]
+pub struct CreateThemeDto {
+    pub name: String,
+    pub display_name: Option<String>,
+    pub version: String,
+    pub description: Option<String>,
+    pub author: Option<String>,
+    pub license: Option<String>,
+    pub homepage: Option<String>,
+    pub plasma_style: Option<String>,
+    pub color_scheme: Option<String>,
+    pub icon_theme: Option<String>,
+    pub cursor_theme: Option<String>,
+    pub kvantum_theme: Option<String>,
+    pub gtk_theme: Option<String>,
+    pub wallpaper_path: Option<String>,
+    pub konsole_profile: Option<String>,
+    pub dep_packages: Option<Vec<String>>,
+    pub dep_fonts: Option<Vec<String>>,
+    pub dep_icons: Option<Vec<String>>,
+    pub also_pack: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CreateThemeResultDto {
+    pub theme_name: String,
+    pub theme_path: String,
+    pub package_path: Option<String>,
+}
+

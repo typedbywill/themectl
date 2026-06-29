@@ -20,6 +20,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
@@ -27,6 +28,7 @@ chrono = { version = "0.4", features = ["serde"] }
 dirs = "5"
 
 themectl-core = { path = "../../../crates/themectl-core" }
+themectl-theme = { path = "../../../crates/themectl-theme" }
 themectl-spec = { path = "../../../crates/themectl-spec" }
 themectl-backup = { path = "../../../crates/themectl-backup" }
 themectl-repository = { path = "../../../crates/themectl-repository" }

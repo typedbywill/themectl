@@ -15,7 +15,8 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiSun,
-  FiMoon
+  FiMoon,
+  FiPlus
 } from "react-icons/fi";
 import { useThemeUIStore } from "../../stores/themeStore";
 
@@ -40,10 +41,12 @@ export const AppShell: React.FC = () => {
     { name: "Dashboard", path: "/", icon: FiGrid },
     { name: "Theme Store", path: "/themes", icon: FiShoppingBag },
     { name: "Installed Themes", path: "/installed", icon: FiLayers },
+    { name: "Create Theme", path: "/create", icon: FiPlus },
     { name: "Repositories", path: "/repositories", icon: FiGlobe },
     { name: "Backups", path: "/backups", icon: FiBriefcase },
     { name: "System Doctor", path: "/doctor", icon: FiCpu },
   ];
+
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-canvas text-ink">

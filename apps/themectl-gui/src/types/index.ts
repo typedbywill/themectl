@@ -116,3 +116,37 @@ export interface GuiSettings {
   auto_remove_old_backups: boolean;
   signature_policy: 'warn' | 'allow' | 'require';
 }
+
+export interface SystemComponent {
+  name: string;
+  path: string;
+}
+
+export interface CreateThemeInput {
+  name: string;
+  display_name: string | null;
+  version: string;
+  description: string | null;
+  author: string | null;
+  license: string | null;
+  homepage: string | null;
+  plasma_style: string | null;
+  color_scheme: string | null;
+  icon_theme: string | null;
+  cursor_theme: string | null;
+  kvantum_theme: string | null;
+  gtk_theme: string | null;
+  wallpaper_path: string | null;
+  konsole_profile: string | null;
+  dep_packages: string[] | null;
+  dep_fonts: string[] | null;
+  dep_icons: string[] | null;
+  also_pack: boolean;
+}
+
+export interface CreateThemeResult {
+  theme_name: string;
+  theme_path: string;
+  package_path: string | null;
+}
+

@@ -680,3 +680,312 @@ pub async fn save_settings(settings: GuiSettingsDto) -> std::result::Result<(), 
         save_settings_internal(&settings)
     }).await.map_err(|e| e.to_string())?
 }
+
+// === NEW THEME CREATION COMMANDS ===
+
+fn list_colors_in_dir(dir: &Path, list: &mut Vec<SystemComponentDto>) {
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_file() && path.extension().map_or(false, |ext| ext == "colors") {
+                if let Some(name) = path.file_stem().and_then(|s| s.to_str()) {
+                    list.push(SystemComponentDto {
+                        name: name.to_string(),
+                        path: path.to_string_lossy().to_string(),
+                    });
+                }
+            }
+        }
+    }
+}
+
+fn list_dirs_in_dir(dir: &Path, list: &mut Vec<SystemComponentDto>) {
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                if let Some(name) = path.file_name().and_then(|s| s.to_str()) {
+                    list.push(SystemComponentDto {
+                        name: name.to_string(),
+                        path: path.to_string_lossy().to_string(),
+                    });
+                }
+            }
+        }
+    }
+}
+
+fn list_icons_in_dir(dir: &Path, list: &mut Vec<SystemComponentDto>) {
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() && path.join("index.theme").exists() {
+                if let Some(name) = path.file_name().and_then(|s| s.to_str()) {
+                    list.push(SystemComponentDto {
+                        name: name.to_string(),
+                        path: path.to_string_lossy().to_string(),
+                    });
+                }
+            }
+        }
+    }
+}
+
+fn list_cursors_in_dir(dir: &Path, list: &mut Vec<SystemComponentDto>) {
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() && path.join("cursors").exists() {
+                if let Some(name) = path.file_name().and_then(|s| s.to_str()) {
+                    list.push(SystemComponentDto {
+                        name: name.to_string(),
+                        path: path.to_string_lossy().to_string(),
+                    });
+                }
+            }
+        }
+    }
+}
+
+fn list_gtk_in_dir(dir: &Path, list: &mut Vec<SystemComponentDto>) {
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() && (path.join("gtk-3.0").exists() || path.join("gtk-4.0").exists()) {
+                if let Some(name) = path.file_name().and_then(|s| s.to_str()) {
+                    list.push(SystemComponentDto {
+                        name: name.to_string(),
+                        path: path.to_string_lossy().to_string(),
+                    });
+                }
+            }
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn list_system_color_schemes() -> std::result::Result<Vec<SystemComponentDto>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut list = Vec::new();
+        if let Some(data_dir) = dirs::data_local_dir() {
+            let local_dir = data_dir.join("color-schemes");
+            list_colors_in_dir(&local_dir, &mut list);
+        }
+        let system_dir = Path::new("/usr/share/color-schemes");
+        list_colors_in_dir(system_dir, &mut list);
+        list.sort_by(|a, b| a.name.cmp(&b.name));
+        list.dedup_by(|a, b| a.name == b.name);
+        Ok(list)
+    }).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn list_system_plasma_styles() -> std::result::Result<Vec<SystemComponentDto>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut list = Vec::new();
+        if let Some(data_dir) = dirs::data_local_dir() {
+            let local_dir = data_dir.join("plasma/desktoptheme");
+            list_dirs_in_dir(&local_dir, &mut list);
+        }
+        let system_dir = Path::new("/usr/share/plasma/desktoptheme");
+        list_dirs_in_dir(system_dir, &mut list);
+        list.sort_by(|a, b| a.name.cmp(&b.name));
+        list.dedup_by(|a, b| a.name == b.name);
+        Ok(list)
+    }).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn list_system_icon_themes() -> std::result::Result<Vec<SystemComponentDto>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut list = Vec::new();
+        if let Some(data_dir) = dirs::data_local_dir() {
+            let local_dir = data_dir.join("icons");
+            list_icons_in_dir(&local_dir, &mut list);
+        }
+        let system_dir = Path::new("/usr/share/icons");
+        list_icons_in_dir(system_dir, &mut list);
+        list.sort_by(|a, b| a.name.cmp(&b.name));
+        list.dedup_by(|a, b| a.name == b.name);
+        Ok(list)
+    }).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn list_system_cursor_themes() -> std::result::Result<Vec<SystemComponentDto>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut list = Vec::new();
+        if let Some(data_dir) = dirs::data_local_dir() {
+            let local_dir = data_dir.join("icons");
+            list_cursors_in_dir(&local_dir, &mut list);
+        }
+        let system_dir = Path::new("/usr/share/icons");
+        list_cursors_in_dir(system_dir, &mut list);
+        list.sort_by(|a, b| a.name.cmp(&b.name));
+        list.dedup_by(|a, b| a.name == b.name);
+        Ok(list)
+    }).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn list_system_kvantum_themes() -> std::result::Result<Vec<SystemComponentDto>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut list = Vec::new();
+        if let Some(config_dir) = dirs::config_dir() {
+            let local_dir = config_dir.join("Kvantum");
+            list_dirs_in_dir(&local_dir, &mut list);
+        }
+        let system_dir = Path::new("/usr/share/Kvantum/themes");
+        list_dirs_in_dir(system_dir, &mut list);
+        list.sort_by(|a, b| a.name.cmp(&b.name));
+        list.dedup_by(|a, b| a.name == b.name);
+        Ok(list)
+    }).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn list_system_gtk_themes() -> std::result::Result<Vec<SystemComponentDto>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut list = Vec::new();
+        if let Some(home) = dirs::home_dir() {
+            let local_themes = home.join(".themes");
+            list_gtk_in_dir(&local_themes, &mut list);
+        }
+        if let Some(data_dir) = dirs::data_local_dir() {
+            let local_share_themes = data_dir.join("themes");
+            list_gtk_in_dir(&local_share_themes, &mut list);
+        }
+        let system_dir = Path::new("/usr/share/themes");
+        list_gtk_in_dir(system_dir, &mut list);
+        list.sort_by(|a, b| a.name.cmp(&b.name));
+        list.dedup_by(|a, b| a.name == b.name);
+        Ok(list)
+    }).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn create_theme(dto: CreateThemeDto) -> std::result::Result<CreateThemeResultDto, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let themes_dir = get_themes_dir().map_err(|e| e.to_string())?;
+        let theme_path = themes_dir.join(&dto.name);
+        if theme_path.exists() {
+            return Err(format!("Theme '{}' already exists in registry", dto.name));
+        }
+        
+        fs::create_dir_all(&theme_path).map_err(|e| e.to_string())?;
+        
+        let mut comp_manifest = themectl_spec::Components {
+            plasma_style: None,
+            color_scheme: None,
+            icon_theme: dto.icon_theme.clone(),
+            kvantum_theme: dto.kvantum_theme.clone(),
+            gtk_theme: dto.gtk_theme.clone(),
+            wallpaper: None,
+            fonts: None,
+            konsole_profile: dto.konsole_profile.clone(),
+            cursor_theme: dto.cursor_theme.clone(),
+        };
+        
+        if let Some(ref wall_path_str) = dto.wallpaper_path {
+            let wall_path = Path::new(wall_path_str);
+            if wall_path.exists() && wall_path.is_file() {
+                let wall_dir = theme_path.join("wallpapers");
+                fs::create_dir_all(&wall_dir).map_err(|e| e.to_string())?;
+                if let Some(filename) = wall_path.file_name() {
+                    let dest_wall_path = wall_dir.join(filename);
+                    fs::copy(wall_path, &dest_wall_path).map_err(|e| e.to_string())?;
+                    comp_manifest.wallpaper = Some(format!("./wallpapers/{}", filename.to_string_lossy()));
+                }
+            }
+        }
+        
+        if let Some(ref scheme_path_str) = dto.color_scheme {
+            let scheme_path = Path::new(scheme_path_str);
+            if scheme_path.exists() && scheme_path.is_file() {
+                let colors_dir = theme_path.join("colors");
+                fs::create_dir_all(&colors_dir).map_err(|e| e.to_string())?;
+                if let Some(filename) = scheme_path.file_name() {
+                    let dest_scheme_path = colors_dir.join(filename);
+                    fs::copy(scheme_path, &dest_scheme_path).map_err(|e| e.to_string())?;
+                    comp_manifest.color_scheme = Some(format!("./colors/{}", filename.to_string_lossy()));
+                }
+            } else {
+                comp_manifest.color_scheme = Some(scheme_path_str.clone());
+            }
+        }
+        
+        if let Some(ref style_path_str) = dto.plasma_style {
+            let style_path = Path::new(style_path_str);
+            if style_path.exists() && style_path.is_dir() {
+                let plasma_dir = theme_path.join("plasma");
+                fs::create_dir_all(&plasma_dir).map_err(|e| e.to_string())?;
+                themectl_utils::fs::copy_dir(style_path, &plasma_dir).map_err(|e| e.to_string())?;
+                comp_manifest.plasma_style = Some("./plasma".to_string());
+            } else {
+                comp_manifest.plasma_style = Some(style_path_str.clone());
+            }
+        }
+        
+        let deps = if dto.dep_packages.is_some() || dto.dep_fonts.is_some() || dto.dep_icons.is_some() {
+            Some(themectl_spec::Dependencies {
+                packages: dto.dep_packages,
+                system: None,
+                fonts: dto.dep_fonts,
+                icons: dto.dep_icons,
+            })
+        } else {
+            None
+        };
+        
+        let manifest = ThemeManifest {
+            id: Some(format!("org.themectl.{}", dto.name)),
+            name: dto.name.clone(),
+            version: dto.version.clone(),
+            display_name: dto.display_name.clone(),
+            description: dto.description.clone(),
+            author: dto.author.clone(),
+            homepage: dto.homepage.clone(),
+            license: dto.license.clone(),
+            supports: vec![DesktopEnvironment::KdePlasma6, DesktopEnvironment::KdePlasma5],
+            targets: Some(vec!["kde-plasma".to_string()]),
+            compatibility: Some(themectl_spec::Compatibility {
+                plasma: Some(themectl_spec::PlasmaCompat {
+                    min: Some("5.27".to_string()),
+                    max: Some("6.x".to_string()),
+                }),
+                distro: None,
+            }),
+            dependencies: deps,
+            components: Some(comp_manifest),
+            signature: None,
+        };
+        
+        let lfile = themectl_spec::lockfile::generate_lockfile();
+        themectl_spec::lockfile::write_lockfile(&theme_path.join("theme.lock"), &lfile).map_err(|e| e.to_string())?;
+        
+        let yaml_file = fs::File::create(theme_path.join("theme.yaml")).map_err(|e| e.to_string())?;
+        serde_yaml::to_writer(yaml_file, &manifest).map_err(|e| e.to_string())?;
+        
+        let mut registry = load_registry().map_err(|e| e.to_string())?;
+        registry.themes.insert(dto.name.clone(), themectl_repository::registry::RegistryTheme {
+            version: dto.version.clone(),
+            installed_at: Utc::now(),
+            source_url: None,
+        });
+        save_registry(&registry).map_err(|e| e.to_string())?;
+        
+        let mut package_path = None;
+        if dto.also_pack {
+            let pkg_path = themes_dir.join(format!("{}.theme", dto.name));
+            themectl_theme::package::pack_theme(&theme_path, &pkg_path).map_err(|e| e.to_string())?;
+            package_path = Some(pkg_path.to_string_lossy().to_string());
+        }
+        
+        Ok(CreateThemeResultDto {
+            theme_name: dto.name,
+            theme_path: theme_path.to_string_lossy().to_string(),
+            package_path,
+        })
+    }).await.map_err(|e| e.to_string())?
+}
+
