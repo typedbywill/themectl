@@ -1,0 +1,4 @@
+name: minimal-theme
+version: 0.1.0
+supports:
+  - kde-plasma-6
